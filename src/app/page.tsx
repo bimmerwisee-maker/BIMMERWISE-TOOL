@@ -39,7 +39,6 @@ const ACTIONS = [
 
 export default function HomePage() {
   const [me, setMe] = useState<MePayload | null>(null);
-  const [entered, setEntered] = useState(false);
 
   const load = useCallback(async () => {
     const res = await fetch("/api/auth/me");
@@ -49,15 +48,13 @@ export default function HomePage() {
 
   useEffect(() => {
     void load();
-    const id = window.setTimeout(() => setEntered(true), 40);
-    return () => window.clearTimeout(id);
   }, [load]);
 
   const booking = me?.currentBooking;
 
   return (
     <AppShell active="home">
-      <div className={`home-stage ${entered ? "is-in" : ""}`}>
+      <div className="home-stage">
         <div className="home-m-glow" aria-hidden />
         <div className="home-m-bars" aria-hidden>
           <span />

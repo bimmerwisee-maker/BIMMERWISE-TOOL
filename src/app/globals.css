@@ -43,7 +43,6 @@ body {
     radial-gradient(ellipse 70% 50% at 78% 72%, rgba(28, 105, 212, 0.1), transparent 58%),
     radial-gradient(ellipse 60% 40% at 48% 92%, rgba(229, 26, 45, 0.08), transparent 55%);
   background-attachment: fixed;
-  animation: mGlowPulse 5.5s ease-in-out infinite;
 }
 
 a {
@@ -77,8 +76,7 @@ textarea {
 }
 
 .m-stripe-animated {
-  background-size: 200% 100%;
-  animation: mStripeSlide 4.5s linear infinite;
+  background-size: 100% 100%;
 }
 
 .m-stripe-thin {
@@ -221,57 +219,23 @@ textarea {
 .home-stage .home-hero,
 .home-stage .home-progress-wrap,
 .home-stage .home-action {
-  opacity: 0;
-  transform: translateY(18px);
-  transition:
-    opacity 520ms ease,
-    transform 520ms ease;
-}
-
-.home-stage.is-in .home-hero {
   opacity: 1;
-  transform: translateY(0);
-  transition-delay: 80ms;
-}
-
-.home-stage.is-in .home-progress-wrap {
-  opacity: 1;
-  transform: translateY(0);
-  transition-delay: 220ms;
-}
-
-.home-stage.is-in .home-action:nth-child(1) {
-  opacity: 1;
-  transform: translateY(0);
-  transition-delay: 280ms;
-}
-
-.home-stage.is-in .home-action:nth-child(2) {
-  opacity: 1;
-  transform: translateY(0);
-  transition-delay: 340ms;
-}
-
-.home-stage.is-in .home-action:nth-child(3) {
-  opacity: 1;
-  transform: translateY(0);
-  transition-delay: 400ms;
-}
-
-.home-stage.is-in .home-action:nth-child(4) {
-  opacity: 1;
-  transform: translateY(0);
-  transition-delay: 460ms;
-}
-
-.home-stage.is-in .home-action:nth-child(5) {
-  opacity: 1;
-  transform: translateY(0);
-  transition-delay: 520ms;
+  transform: none;
 }
 
 .home-m-glow {
-  display: none;
+  pointer-events: none;
+  position: absolute;
+  left: -20%;
+  right: -20%;
+  top: -1rem;
+  height: 240px;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 20% 40%, rgba(0, 160, 227, 0.28), transparent 55%),
+    radial-gradient(circle at 55% 30%, rgba(28, 105, 212, 0.2), transparent 50%),
+    radial-gradient(circle at 85% 45%, rgba(229, 26, 45, 0.16), transparent 50%);
+  animation: mGlowPulse 5.5s ease-in-out infinite;
 }
 
 .home-m-bars {
@@ -289,9 +253,9 @@ textarea {
 .home-m-bars span {
   width: 7px;
   border-radius: 3px;
-  transform: skewX(-18deg) scaleY(0.35);
+  transform: skewX(-18deg) scaleY(1);
   transform-origin: bottom;
-  animation: mBarRise 1.6s ease forwards;
+  opacity: 1;
 }
 
 .home-m-bars span:nth-child(1) {
@@ -727,7 +691,7 @@ select {
     transparent 70%
   );
   transform: translateX(-120%);
-  animation: progressSheen 2.2s ease-in-out 0.6s infinite;
+  display: none;
 }
 
 .progress-steps {
