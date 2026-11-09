@@ -14,6 +14,29 @@ type MePayload = {
   } | null;
 };
 
+const ACTIONS = [
+  {
+    href: "/book",
+    title: "Book service",
+    subtitle: "Reserve a bay — guest or account",
+  },
+  {
+    href: "/services",
+    title: "Our services",
+    subtitle: "Servicing, EV, gearbox, CarPlay & more",
+  },
+  {
+    href: "/products",
+    title: "Products",
+    subtitle: "CarPlay, Android Auto, maps & cameras",
+  },
+  {
+    href: "/about",
+    title: "About us",
+    subtitle: "Dublin BMW & MINI specialists in Lusk",
+  },
+] as const;
+
 export default function HomePage() {
   const [me, setMe] = useState<MePayload | null>(null);
   const [entered, setEntered] = useState(false);
@@ -47,7 +70,7 @@ export default function HomePage() {
           <p className="home-copy">
             {me?.customer
               ? `Welcome back, ${me.customer.name}.`
-              : "Independent BMW & MINI service booking."}
+              : "Dealership expertise. Independent care."}
           </p>
         </section>
 
@@ -61,31 +84,30 @@ export default function HomePage() {
           </div>
         ) : null}
 
-        <div className="home-actions">
-          <a href="/book" className="home-action">
+        <div className="home-actions home-actions-grid">
+          {ACTIONS.map((action) => (
+            <a key={action.href} href={action.href} className="home-action">
+              <span>
+                <strong>{action.title}</strong>
+                <span>{action.subtitle}</span>
+              </span>
+              <em>→</em>
+            </a>
+          ))}
+          <a
+            href={me?.customer ? "/profile" : "/register"}
+            className="home-action"
+          >
             <span>
-              <strong>Book service</strong>
-              <span>Guest or saved vehicle</span>
+              <strong>{me?.customer ? "My garage" : "Create account"}</strong>
+              <span>
+                {me?.customer
+                  ? "Vehicles, profile & fingerprint login"
+                  : "Save vehicles and track bay progress"}
+              </span>
             </span>
             <em>→</em>
           </a>
-          {me?.customer ? (
-            <a href="/profile" className="home-action">
-              <span>
-                <strong>My profile</strong>
-                <span>Vehicles and fingerprint login</span>
-              </span>
-              <em>→</em>
-            </a>
-          ) : (
-            <a href="/register" className="home-action">
-              <span>
-                <strong>Register</strong>
-                <span>Email or Google</span>
-              </span>
-              <em>→</em>
-            </a>
-          )}
         </div>
       </div>
     </AppShell>

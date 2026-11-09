@@ -68,18 +68,27 @@ export default function AdminPage() {
   return (
     <AppShell active="admin">
       <section className="hero">
-        <h1>Shop console</h1>
-        <p>Post customer updates and upload photos of findings on each vehicle.</p>
+        <h1>Staff console</h1>
+        <p>
+          Workshop login for booking updates and inspection photos. Customers use
+          the main app — this page is for staff only.
+        </p>
       </section>
 
       {!session?.admin ? (
         <form className="panel form-grid" onSubmit={onLogin}>
           {!session?.passwordLoginAvailable ? (
             <div className="sample-banner">
-              Password login needs the app admin secret configured. Cursor team
-              admins can open the console when the app is published for the team.
+              Best setup: add the <code>BOOKING_ADMIN_PASSWORD</code> app secret,
+              then bookmark this Staff page on workshop phones. Cursor team admins
+              can also open it when the app is published for the team.
             </div>
-          ) : null}
+          ) : (
+            <div className="sample-banner">
+              Enter the workshop admin password. Bookmark this page on staff
+              devices for quick access.
+            </div>
+          )}
           <label>
             Admin password
             <input

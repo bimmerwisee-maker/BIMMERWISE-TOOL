@@ -230,13 +230,31 @@ textarea {
 .home-stage.is-in .home-action:nth-child(1) {
   opacity: 1;
   transform: translateY(0);
-  transition-delay: 320ms;
+  transition-delay: 280ms;
 }
 
 .home-stage.is-in .home-action:nth-child(2) {
   opacity: 1;
   transform: translateY(0);
-  transition-delay: 420ms;
+  transition-delay: 340ms;
+}
+
+.home-stage.is-in .home-action:nth-child(3) {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 400ms;
+}
+
+.home-stage.is-in .home-action:nth-child(4) {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 460ms;
+}
+
+.home-stage.is-in .home-action:nth-child(5) {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 520ms;
 }
 
 .home-m-glow {
@@ -293,6 +311,10 @@ textarea {
   display: grid;
   gap: 0.7rem;
   margin-top: 1.4rem;
+}
+
+.home-actions-grid {
+  gap: 0.65rem;
 }
 
 .home-actions a,
@@ -722,6 +744,76 @@ select {
 .btn.fingerprint {
   background: linear-gradient(90deg, var(--m-cyan), var(--m-blue));
   color: #041018;
+}
+
+.content-grid {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.content-card {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.95rem 1rem;
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  border: 1px solid var(--line);
+}
+
+.content-card strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.98rem;
+}
+
+.content-card span {
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.content-card .price-tag {
+  color: var(--m-cyan);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.content-card em {
+  font-style: normal;
+  color: var(--text);
+  font-size: 0.82rem;
+  margin-top: 0.2rem;
+}
+
+.content-copy {
+  margin: 0 0 0.85rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.content-copy:last-child {
+  margin-bottom: 0;
+}
+
+.content-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.content-list a {
+  color: var(--m-cyan);
+}
+
+.staff-foot {
+  margin: 1.5rem 0 0;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.staff-foot a {
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 @keyframes mStripeSlide {

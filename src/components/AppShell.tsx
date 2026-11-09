@@ -48,7 +48,16 @@ export function AppShell({
   active,
 }: {
   children: React.ReactNode;
-  active?: "home" | "book" | "track" | "admin" | "profile" | "register";
+  active?:
+    | "home"
+    | "book"
+    | "track"
+    | "admin"
+    | "profile"
+    | "register"
+    | "about"
+    | "services"
+    | "products";
 }) {
   return (
     <div className="app-shell">
