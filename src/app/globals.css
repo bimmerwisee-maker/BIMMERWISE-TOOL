@@ -412,13 +412,11 @@ textarea {
   width: 100%;
   border-radius: 10px;
   border: 1px solid var(--line);
-  background: var(--bg);
+  background: rgba(10, 10, 11, 0.85);
   color: var(--text);
   padding: 0.8rem 0.85rem;
   outline: none;
   min-height: 46px;
-  appearance: none;
-  -webkit-appearance: none;
 }
 
 input[type="date"],
@@ -443,14 +441,10 @@ textarea {
 }
 
 select {
-  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%),
-    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
-  background-position:
-    calc(100% - 18px) 50%,
-    calc(100% - 12px) 50%;
-  background-size: 6px 6px;
-  background-repeat: no-repeat;
-  padding-right: 2rem;
+  appearance: auto;
+  -webkit-appearance: menulist;
+  background-color: rgba(10, 10, 11, 0.85);
+  padding-right: 0.85rem;
 }
 
 .btn-row {
@@ -547,14 +541,19 @@ select {
   padding: 0.85rem;
   border-radius: 14px;
   border: 1px solid var(--line);
-  background: rgba(10, 10, 11, 0.28);
+  background: rgba(10, 10, 11, 0.45);
 }
 
 .model-preview img {
+  display: block;
   width: 100%;
-  height: 160px;
+  max-width: 100%;
+  height: 180px;
   object-fit: contain;
-  background: transparent;
+  background:
+    radial-gradient(ellipse at center, rgba(0, 160, 227, 0.12), transparent 65%),
+    rgba(8, 8, 10, 0.9);
+  border-radius: 10px;
 }
 
 .model-preview strong,

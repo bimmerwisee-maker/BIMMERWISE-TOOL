@@ -38,6 +38,7 @@ function ProfileInner() {
   const [loading, setLoading] = useState(true);
   const [passkeyCount, setPasskeyCount] = useState(0);
   const [webauthnOk, setWebauthnOk] = useState(false);
+  const [pickerKey, setPickerKey] = useState(0);
 
   const refresh = useCallback(async () => {
     const res = await fetch("/api/auth/me");
@@ -153,7 +154,9 @@ function ProfileInner() {
         setError("Vehicle needs registration, model, and VIN last 7.");
         return;
       }
-      (event.target as HTMLFormElement).reset();
+      const formEl = event.currentTarget;
+      formEl.reset();
+      setPickerKey((k) => k + 1);
       await refresh();
       setNotice("Vehicle added.");
     } finally {
@@ -281,7 +284,7 @@ function ProfileInner() {
 
       <form className="panel form-grid section-gap" onSubmit={onAddVehicle}>
         <h3>Add vehicle</h3>
-        <ModelPicker />
+        <ModelPicker key={pickerKey} resetKey={pickerKey} />
         <label>
           Registration number
           <input name="registration" required maxLength={20} />

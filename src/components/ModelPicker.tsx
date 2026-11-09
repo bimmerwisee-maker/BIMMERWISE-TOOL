@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { FuelType } from "../lib/bmw-models";
+
+type FuelType = "Petrol" | "Diesel" | "Plugin Hybrid" | "Electric";
 
 type ModelOption = {
   id: string;
@@ -14,7 +15,12 @@ type ModelOption = {
   image: string;
 };
 
-const FUELS: FuelType[] = ["Petrol", "Diesel", "Plugin Hybrid", "Electric"];
+const ALL_FUELS: FuelType[] = [
+  "Petrol",
+  "Diesel",
+  "Plugin Hybrid",
+  "Electric",
+];
 
 export function ModelPicker({
   yearName = "year",
@@ -22,65 +28,96 @@ export function ModelPicker({
   modelName = "model",
   makeName = "make",
   required = true,
+  resetKey = 0,
 }: {
   yearName?: string;
   modelSlugName?: string;
   modelName?: string;
   makeName?: string;
   required?: boolean;
+  resetKey?: number;
 }) {
   const [seriesList, setSeriesList] = useState<string[]>([]);
   const [models, setModels] = useState<ModelOption[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const [series, setSeries] = useState("");
   const [year, setYear] = useState("");
-  const [fuel, setFuel] = useState<FuelType | "">("");
+  const [fuel, setFuel] = useState("");
   const [modelId, setModelId] = useState("");
+  const [imgOk, setImgOk] = useState(true);
 
   useEffect(() => {
+    let alive = true;
     void fetch("/api/models")
       .then((r) => r.json())
       .then((data) => {
-        setSeriesList(data.series ?? []);
-        setModels(data.models ?? []);
+        if (!alive) return;
+        setSeriesList(Array.isArray(data.series) ? data.series : []);
+        setModels(Array.isArray(data.models) ? data.models : []);
+        setLoaded(true);
       })
-      .catch(() => undefined);
+      .catch(() => {
+        if (!alive) return;
+        setLoaded(true);
+      });
+    return () => {
+      alive = false;
+    };
   }, []);
 
+  useEffect(() => {
+    setSeries("");
+    setYear("");
+    setFuel("");
+    setModelId("");
+    setImgOk(true);
+  }, [resetKey]);
+
   const seriesModels = useMemo(
-    () => models.filter((m) => m.series === series),
+    () => (series ? models.filter((m) => m.series === series) : []),
     [models, series],
   );
 
   const years = useMemo(() => {
     if (!seriesModels.length) return [] as number[];
-    const from = Math.min(...seriesModels.map((m) => m.yearsFrom));
+    const from = Math.min(...seriesModels.map((m) => Number(m.yearsFrom)));
     const to = Math.max(
-      ...seriesModels.map((m) => m.yearsTo ?? new Date().getFullYear()),
+      ...seriesModels.map((m) =>
+        m.yearsTo == null ? new Date().getFullYear() : Number(m.yearsTo),
+      ),
     );
     const list: number[] = [];
     for (let y = to; y >= from; y -= 1) list.push(y);
     return list;
   }, [seriesModels]);
 
+  const yearNum = year ? Number(year) : NaN;
+
   const yearModels = useMemo(() => {
-    if (!year) return [] as ModelOption[];
-    const y = Number(year);
-    return seriesModels.filter(
-      (m) => m.yearsFrom <= y && (m.yearsTo == null || m.yearsTo >= y),
-    );
-  }, [seriesModels, year]);
+    if (!Number.isFinite(yearNum)) return [] as ModelOption[];
+    return seriesModels.filter((m) => {
+      const from = Number(m.yearsFrom);
+      const to = m.yearsTo == null ? Infinity : Number(m.yearsTo);
+      return from <= yearNum && yearNum <= to;
+    });
+  }, [seriesModels, yearNum]);
 
   const fuels = useMemo(() => {
-    const available = new Set(yearModels.map((m) => m.fuel));
-    return FUELS.filter((f) => available.has(f));
+    const available = new Set(
+      yearModels.map((m) => String(m.fuel || "").trim() as FuelType),
+    );
+    return ALL_FUELS.filter((f) => available.has(f));
   }, [yearModels]);
 
   const filtered = useMemo(() => {
     if (!fuel) return [] as ModelOption[];
-    return yearModels.filter((m) => m.fuel === fuel);
+    return yearModels.filter((m) => String(m.fuel).trim() === fuel);
   }, [yearModels, fuel]);
 
-  const selected = models.find((m) => m.id === modelId) ?? null;
+  const selected = useMemo(
+    () => models.find((m) => m.id === modelId) ?? null,
+    [models, modelId],
+  );
 
   const previewImage =
     selected?.image ||
@@ -90,22 +127,8 @@ export function ModelPicker({
     "";
 
   useEffect(() => {
-    if (!series) return;
-    if (year && !years.includes(Number(year))) setYear("");
-  }, [series, year, years]);
-
-  useEffect(() => {
-    if (!fuel) return;
-    if (!fuels.includes(fuel as FuelType)) {
-      setFuel("");
-      setModelId("");
-    }
-  }, [fuel, fuels]);
-
-  useEffect(() => {
-    if (!modelId) return;
-    if (!filtered.some((m) => m.id === modelId)) setModelId("");
-  }, [filtered, modelId]);
+    setImgOk(true);
+  }, [previewImage]);
 
   return (
     <div className="form-grid model-picker">
@@ -116,6 +139,8 @@ export function ModelPicker({
         name={modelName}
         value={selected ? `${selected.series} ${selected.name}` : ""}
       />
+
+      {!loaded ? <p className="muted">Loading BMW models…</p> : null}
 
       <label>
         Series
@@ -153,7 +178,7 @@ export function ModelPicker({
         >
           <option value="">Select year</option>
           {years.map((y) => (
-            <option key={y} value={y}>
+            <option key={y} value={String(y)}>
               {y}
             </option>
           ))}
@@ -165,13 +190,19 @@ export function ModelPicker({
         <select
           value={fuel}
           onChange={(e) => {
-            setFuel(e.target.value as FuelType | "");
+            setFuel(e.target.value);
             setModelId("");
           }}
           required={required}
-          disabled={!year}
+          disabled={!year || fuels.length === 0}
         >
-          <option value="">Petrol / Diesel / PHEV / Electric</option>
+          <option value="">
+            {!year
+              ? "Select year first"
+              : fuels.length === 0
+                ? "No fuel types for this year"
+                : "Select fuel type"}
+          </option>
           {fuels.map((f) => (
             <option key={f} value={f}>
               {f}
@@ -186,9 +217,15 @@ export function ModelPicker({
           value={modelId}
           onChange={(e) => setModelId(e.target.value)}
           required={required}
-          disabled={!fuel}
+          disabled={!fuel || filtered.length === 0}
         >
-          <option value="">Select model</option>
+          <option value="">
+            {!fuel
+              ? "Select fuel type first"
+              : filtered.length === 0
+                ? "No models for this fuel"
+                : "Select model"}
+          </option>
           {filtered.map((m) => (
             <option key={m.id} value={m.id}>
               {m.name} · {m.body}
@@ -200,7 +237,16 @@ export function ModelPicker({
       {previewImage ? (
         <div className="model-preview">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={previewImage} alt={selected?.name || series || "BMW"} />
+          <img
+            key={previewImage}
+            src={previewImage}
+            alt={selected?.name || series || "BMW"}
+            onLoad={() => setImgOk(true)}
+            onError={() => setImgOk(false)}
+          />
+          {!imgOk ? (
+            <p className="error">Could not load model photo.</p>
+          ) : null}
           <div>
             <strong>
               {selected
@@ -209,8 +255,9 @@ export function ModelPicker({
             </strong>
             <span className="muted">
               {selected
-                ? `${selected.fuel} · ${selected.body}`
-                : fuel || year || "Pick series, year, fuel, then model"}
+                ? `${selected.fuel} · ${year} · ${selected.body}`
+                : [year, fuel].filter(Boolean).join(" · ") ||
+                  "Pick series, year, fuel, then model"}
             </span>
           </div>
         </div>
