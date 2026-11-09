@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-label="M2">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="hsl(350,42%,18%)"/>
+      <stop offset="100%" stop-color="hsl(350,35%,8%)"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fff" stop-opacity=".18"/>
+      <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="360" rx="28" fill="url(#g)"/>
+  <ellipse cx="320" cy="300" rx="210" ry="18" fill="#000" opacity=".35"/>
+  <g transform="translate(40,40)">
+    
+  <path d="M80 210 C110 155 160 125 240 118 L390 118 C460 122 495 155 520 210 Z" fill="#d5d9de"/>
+  <path d="M180 118 L250 88 H370 L430 118 Z" fill="#6f7d8b"/>
+  <circle cx="160" cy="220" r="34" fill="#111"/><circle cx="160" cy="220" r="15" fill="#444"/>
+  <circle cx="440" cy="220" r="34" fill="#111"/><circle cx="440" cy="220" r="15" fill="#444"/>
+
+    <path d="M80 210 h400" stroke="#00a0e3" stroke-width="3" opacity=".55"/>
+    <path d="M120 218 h120" stroke="#1c69d4" stroke-width="3" opacity=".55"/>
+    <path d="M260 218 h80" stroke="#e51a2d" stroke-width="3" opacity=".55"/>
+  </g>
+  <text x="32" y="48" fill="#f2f2f3" font-family="Arial, sans-serif" font-size="22" font-weight="700">M2</text>
+  <text x="32" y="74" fill="#8b8b93" font-family="Arial, sans-serif" font-size="13">EU market · from 2010</text>
+</svg>
