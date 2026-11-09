@@ -10,6 +10,7 @@ type Session = { admin: boolean; passwordLoginAvailable: boolean };
 
 export default function AdminPage() {
   const [session, setSession] = useState<Session | null>(null);
+  const [email, setEmail] = useState("info@bimmerwise.com");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -41,14 +42,14 @@ export default function AdminPage() {
       const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ email, password }),
       });
       if (res.status === 503) {
-        setError("Admin password is not configured for this deployment.");
+        setError("Admin login is not configured for this deployment.");
         return;
       }
       if (!res.ok) {
-        setError("Wrong password.");
+        setError("Wrong email or password.");
         return;
       }
       setPassword("");
@@ -77,20 +78,22 @@ export default function AdminPage() {
 
       {!session?.admin ? (
         <form className="panel form-grid" onSubmit={onLogin}>
-          {!session?.passwordLoginAvailable ? (
-            <div className="sample-banner">
-              Best setup: add the <code>BOOKING_ADMIN_PASSWORD</code> app secret,
-              then bookmark this Staff page on workshop phones. Cursor team admins
-              can also open it when the app is published for the team.
-            </div>
-          ) : (
-            <div className="sample-banner">
-              Enter the workshop admin password. Bookmark this page on staff
-              devices for quick access.
-            </div>
-          )}
+          <div className="sample-banner">
+            Staff profile login. Bookmark this page on workshop phones.
+          </div>
           <label>
-            Admin password
+            Admin email
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="username"
+              disabled={!session?.passwordLoginAvailable}
+            />
+          </label>
+          <label>
+            Password
             <input
               type="password"
               value={password}

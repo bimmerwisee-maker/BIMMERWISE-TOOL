@@ -1,5 +1,5 @@
 import {
-  adminPasswordConfigured,
+  adminLoginAvailable,
   adminSetCookie,
   createAdminSession,
   verifyAdminLogin,
@@ -23,22 +23,28 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!adminPasswordConfigured()) {
+  if (!(await adminLoginAvailable())) {
     return Response.json(
       { error: "password_not_configured" },
       { status: 503, headers: { "cache-control": "private, no-store" } },
     );
   }
 
-  let body: { password?: string };
+  let body: { email?: string; password?: string };
   try {
     body = await request.json();
   } catch {
     return Response.json({ error: "invalid_json" }, { status: 400 });
   }
 
+  const email = String(body.email ?? "").trim();
   const password = String(body.password ?? "");
-  if (!(await verifyAdminLogin(password))) {
+  if (
+    !(await verifyAdminLogin({
+      email: email || "info@bimmerwise.com",
+      password,
+    }))
+  ) {
     return Response.json({ error: "invalid_password" }, { status: 401 });
   }
 

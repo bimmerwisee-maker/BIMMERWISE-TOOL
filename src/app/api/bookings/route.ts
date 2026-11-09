@@ -6,6 +6,7 @@ import {
   getCustomerBySession,
   getVehicle,
 } from "../../../lib/customers";
+import { findBmwModel, modelDisplayName } from "../../../lib/bmw-models";
 import { SERVICE_TYPES } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
@@ -64,6 +65,12 @@ export async function POST(request: Request) {
   let vehicle_model = clean(body.vehicle_model, 80);
   let vehicle_plate = clean(body.vehicle_plate, 20).toUpperCase();
   let vin_last7 = clean(body.vin_last7, 17).toUpperCase();
+  const modelSlug = clean(body.model_slug, 80);
+  const catalogModel = findBmwModel(modelSlug);
+  if (catalogModel) {
+    vehicle_make = "BMW";
+    vehicle_model = modelDisplayName(catalogModel);
+  }
   let vehicle_id: string | null = null;
   let customer_id: string | null = null;
 

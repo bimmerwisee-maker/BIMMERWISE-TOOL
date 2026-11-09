@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppShell } from "../../components/AppShell";
+import { ModelPicker } from "../../components/ModelPicker";
 import { SERVICE_TYPES } from "../../lib/types";
 
 type Vehicle = {
@@ -174,26 +175,16 @@ export default function BookPage() {
               Email
               <input name="customer_email" type="email" required maxLength={120} />
             </label>
-            <div className="form-grid two">
-              <label>
-                Year
-                <input name="vehicle_year" maxLength={8} placeholder="2019" inputMode="numeric" />
-              </label>
-              <label>
-                Make
-                <input name="vehicle_make" maxLength={80} defaultValue="BMW" />
-              </label>
-            </div>
-            <div className="form-grid two">
-              <label>
-                Model
-                <input name="vehicle_model" required maxLength={80} placeholder="M340i" />
-              </label>
-              <label>
-                Registration
-                <input name="vehicle_plate" required maxLength={20} />
-              </label>
-            </div>
+            <ModelPicker
+              yearName="vehicle_year"
+              modelSlugName="model_slug"
+              modelName="vehicle_model"
+              makeName="vehicle_make"
+            />
+            <label>
+              Registration
+              <input name="vehicle_plate" required maxLength={20} />
+            </label>
             <label>
               VIN (last 7 minimum)
               <input

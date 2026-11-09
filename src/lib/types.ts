@@ -71,7 +71,9 @@ export type Vehicle = {
   year: string;
   make: string;
   model: string;
+  model_slug: string;
   created_at: string;
+  image_url?: string;
 };
 
 export const STATUS_LABELS: Record<BookingStatus, string> = {

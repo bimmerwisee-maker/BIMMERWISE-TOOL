@@ -5,13 +5,29 @@ import {
   requireTeamRole,
   type VerifiedIdentity,
 } from "../../cursor/identity";
+import { verifyPassword } from "./customers";
 import { sql } from "./db";
 
 export const ADMIN_COOKIE = "bw_admin_session";
 const SESSION_DAYS = 7;
 
+export type AdminUser = {
+  id: string;
+  email: string;
+  name: string;
+  password_hash: string;
+};
+
 export function adminPasswordConfigured(): boolean {
   return Boolean(process.env.BOOKING_ADMIN_PASSWORD?.trim());
+}
+
+export async function adminLoginAvailable(): Promise<boolean> {
+  if (adminPasswordConfigured()) return true;
+  const rows = await sql<{ count: string }>(
+    "select count(*)::text as count from admin_users",
+  );
+  return Number(rows[0]?.count ?? 0) > 0;
 }
 
 export function passwordsMatch(provided: string, expected: string): boolean {
@@ -19,6 +35,14 @@ export function passwordsMatch(provided: string, expected: string): boolean {
   const b = Buffer.from(expected);
   if (a.length !== b.length) return false;
   return timingSafeEqual(a, b);
+}
+
+export async function getAdminByEmail(email: string): Promise<AdminUser | null> {
+  const rows = await sql<AdminUser>(
+    "select * from admin_users where lower(email) = lower($1) limit 1",
+    [email.trim()],
+  );
+  return rows[0] ?? null;
 }
 
 export function adminSetCookie(token: string): string {
@@ -97,8 +121,22 @@ export async function isAdminRequest(request: Request): Promise<boolean> {
   return result === true;
 }
 
-export async function verifyAdminLogin(password: string): Promise<boolean> {
+export async function verifyAdminLogin(input: {
+  email?: string;
+  password: string;
+}): Promise<boolean> {
+  const password = input.password;
+  if (!password) return false;
+
+  const email = (input.email ?? "").trim().toLowerCase();
+  if (email) {
+    const admin = await getAdminByEmail(email);
+    if (admin?.password_hash && verifyPassword(password, admin.password_hash)) {
+      return true;
+    }
+  }
+
   const expected = process.env.BOOKING_ADMIN_PASSWORD?.trim() ?? "";
-  if (!expected || !password) return false;
+  if (!expected) return false;
   return passwordsMatch(password, expected);
 }

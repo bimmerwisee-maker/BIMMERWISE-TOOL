@@ -46,8 +46,9 @@ export async function POST(request: Request) {
   const year = clean(body.year, 8);
   const make = clean(body.make, 40) || "BMW";
   const model = clean(body.model, 80);
+  const modelSlug = clean(body.model_slug, 80);
 
-  if (vinLast7.length < 7 || !registration || !model) {
+  if (vinLast7.length < 7 || !registration || (!model && !modelSlug)) {
     return Response.json({ error: "invalid_vehicle" }, { status: 400 });
   }
 
@@ -59,6 +60,7 @@ export async function POST(request: Request) {
       year,
       make,
       model,
+      modelSlug,
     });
     return Response.json(
       { vehicle },

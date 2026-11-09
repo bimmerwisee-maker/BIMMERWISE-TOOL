@@ -1,4 +1,4 @@
-import { adminPasswordConfigured, isAdminRequest } from "../../../../lib/auth";
+import { adminLoginAvailable, isAdminRequest } from "../../../../lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -7,7 +7,7 @@ export async function GET(request: Request) {
   return Response.json(
     {
       admin,
-      passwordLoginAvailable: adminPasswordConfigured(),
+      passwordLoginAvailable: await adminLoginAvailable(),
     },
     { headers: { "cache-control": "private, no-store" } },
   );

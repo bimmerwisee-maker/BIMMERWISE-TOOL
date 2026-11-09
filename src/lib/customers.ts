@@ -1,4 +1,9 @@
 import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from "node:crypto";
+import {
+  findBmwModel,
+  modelDisplayName,
+  resolveModelImage,
+} from "./bmw-models";
 import { sql } from "./db";
 import type { Booking, Customer, Vehicle } from "./types";
 
@@ -176,11 +181,19 @@ export function publicCustomer(c: Customer) {
   };
 }
 
+export function decorateVehicle(vehicle: Vehicle): Vehicle {
+  return {
+    ...vehicle,
+    image_url: resolveModelImage(vehicle.model_slug, vehicle.model),
+  };
+}
+
 export async function listVehicles(customerId: string): Promise<Vehicle[]> {
-  return sql<Vehicle>(
+  const rows = await sql<Vehicle>(
     "select * from vehicles where customer_id = $1 order by created_at desc",
     [customerId],
   );
+  return rows.map(decorateVehicle);
 }
 
 export async function addVehicle(input: {
@@ -190,25 +203,33 @@ export async function addVehicle(input: {
   year: string;
   make: string;
   model: string;
+  modelSlug?: string;
 }): Promise<Vehicle> {
   const vin = input.vinLast7.trim().toUpperCase();
   if (vin.length < 7) {
     throw new Error("vin_too_short");
   }
+  const catalog = findBmwModel(input.modelSlug);
+  const modelName = catalog
+    ? modelDisplayName(catalog)
+    : input.model.trim();
+  const make = catalog ? "BMW" : input.make.trim() || "BMW";
+  const year = input.year.trim();
   const rows = await sql<Vehicle>(
-    `insert into vehicles (id, customer_id, vin_last7, registration, year, make, model)
-     values ($1,$2,$3,$4,$5,$6,$7) returning *`,
+    `insert into vehicles (id, customer_id, vin_last7, registration, year, make, model, model_slug)
+     values ($1,$2,$3,$4,$5,$6,$7,$8) returning *`,
     [
       randomUUID(),
       input.customerId,
       vin.slice(-7),
       input.registration.trim().toUpperCase(),
-      input.year.trim(),
-      input.make.trim() || "BMW",
-      input.model.trim(),
+      year,
+      make,
+      modelName,
+      catalog?.id ?? input.modelSlug?.trim() ?? "",
     ],
   );
-  return rows[0];
+  return decorateVehicle(rows[0]);
 }
 
 export async function getVehicle(
@@ -219,7 +240,7 @@ export async function getVehicle(
     "select * from vehicles where id = $1 and customer_id = $2 limit 1",
     [vehicleId, customerId],
   );
-  return rows[0] ?? null;
+  return rows[0] ? decorateVehicle(rows[0]) : null;
 }
 
 export async function currentBookingForCustomer(

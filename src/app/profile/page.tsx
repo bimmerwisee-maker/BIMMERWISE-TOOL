@@ -7,6 +7,7 @@ import {
   startRegistration,
 } from "@simplewebauthn/browser";
 import { AppShell } from "../../components/AppShell";
+import { ModelPicker } from "../../components/ModelPicker";
 
 type Customer = {
   id: string;
@@ -23,6 +24,7 @@ type Vehicle = {
   year: string;
   make: string;
   model: string;
+  image_url?: string;
 };
 
 function ProfileInner() {
@@ -255,13 +257,21 @@ function ProfileInner() {
         ) : (
           <div className="vehicle-list">
             {vehicles.map((v) => (
-              <div key={v.id} className="vehicle-row">
-                <strong>
-                  {v.year} {v.make} {v.model}
-                </strong>
-                <div className="meta">
-                  <span>{v.registration}</span>
-                  <span>VIN …{v.vin_last7}</span>
+              <div key={v.id} className="vehicle-row vehicle-row-media">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={v.image_url || "/cars/generic.svg"}
+                  alt=""
+                  className="vehicle-thumb"
+                />
+                <div>
+                  <strong>
+                    {v.year} {v.make} {v.model}
+                  </strong>
+                  <div className="meta">
+                    <span>{v.registration}</span>
+                    <span>VIN …{v.vin_last7}</span>
+                  </div>
                 </div>
               </div>
             ))}
@@ -271,20 +281,7 @@ function ProfileInner() {
 
       <form className="panel form-grid section-gap" onSubmit={onAddVehicle}>
         <h3>Add vehicle</h3>
-        <div className="form-grid two">
-          <label>
-            Year
-            <input name="year" maxLength={8} placeholder="2021" />
-          </label>
-          <label>
-            Make
-            <input name="make" defaultValue="BMW" maxLength={40} />
-          </label>
-        </div>
-        <label>
-          Model
-          <input name="model" required maxLength={80} placeholder="M2" />
-        </label>
+        <ModelPicker />
         <label>
           Registration number
           <input name="registration" required maxLength={20} />

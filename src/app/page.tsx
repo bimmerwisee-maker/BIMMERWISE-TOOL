@@ -5,8 +5,18 @@ import { AppShell } from "../components/AppShell";
 import { BrandLogo } from "../components/BrandLogo";
 import { ProgressBar } from "../components/ProgressBar";
 
+type GarageCar = {
+  id: string;
+  year: string;
+  make: string;
+  model: string;
+  registration: string;
+  image_url?: string;
+};
+
 type MePayload = {
   customer: { name: string } | null;
+  vehicles?: GarageCar[];
   currentBooking: {
     vehicle: string;
     progress_percent: number;
@@ -51,6 +61,7 @@ export default function HomePage() {
   }, [load]);
 
   const booking = me?.currentBooking;
+  const garage = me?.customer ? me.vehicles ?? [] : [];
 
   return (
     <AppShell active="home">
@@ -70,6 +81,30 @@ export default function HomePage() {
               : "Dealership expertise. Independent care."}
           </p>
         </section>
+
+        {garage.length > 0 ? (
+          <section className="home-garage" aria-label="Your BMW models">
+            <div className="home-garage-head">
+              <h2>Your cars</h2>
+              <a href="/profile">Manage</a>
+            </div>
+            <div className="home-garage-track">
+              {garage.map((car) => (
+                <article key={car.id} className="home-garage-card">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={car.image_url || "/cars/generic.svg"}
+                    alt={`${car.year} ${car.make} ${car.model}`}
+                  />
+                  <strong>
+                    {car.year} {car.model}
+                  </strong>
+                  <span>{car.registration}</span>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         {booking ? (
           <div className="home-progress-wrap">
