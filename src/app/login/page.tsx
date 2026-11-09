@@ -3,6 +3,10 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import {
+  browserSupportsWebAuthn,
+  startAuthentication,
+} from "@simplewebauthn/browser";
 import { AppShell } from "../../components/AppShell";
 import { BrandLogo } from "../../components/BrandLogo";
 
@@ -11,8 +15,11 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [googleConfigured, setGoogleConfigured] = useState(false);
+  const [email, setEmail] = useState("");
+  const [webauthnOk, setWebauthnOk] = useState(false);
 
   useEffect(() => {
+    setWebauthnOk(browserSupportsWebAuthn());
     void (async () => {
       const res = await fetch("/api/auth/me");
       if (!res.ok) return;
@@ -45,6 +52,42 @@ export default function LoginPage() {
     }
   }
 
+  async function onFingerprint() {
+    setBusy(true);
+    setError("");
+    try {
+      const optRes = await fetch("/api/auth/webauthn/login/options", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email: email.trim() || undefined }),
+      });
+      if (!optRes.ok) {
+        setError(
+          email.trim()
+            ? "No fingerprint login set for that email yet."
+            : "Could not start fingerprint login.",
+        );
+        return;
+      }
+      const options = await optRes.json();
+      const assertion = await startAuthentication({ optionsJSON: options });
+      const verifyRes = await fetch("/api/auth/webauthn/login/verify", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ response: assertion, email }),
+      });
+      if (!verifyRes.ok) {
+        setError("Fingerprint login failed. Try again or use email.");
+        return;
+      }
+      router.push("/profile");
+    } catch {
+      setError("Fingerprint cancelled or unavailable on this device.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function onSampleGoogle() {
     setBusy(true);
     setError("");
@@ -65,10 +108,26 @@ export default function LoginPage() {
       <section className="register-hero">
         <BrandLogo size="hero" href={null} />
         <h1>Sign in</h1>
-        <p>Use your email account or Google to open your BimmerWise profile.</p>
+        <p>Email, Google, or fingerprint on supported phones.</p>
       </section>
 
       <div className="panel form-grid">
+        {webauthnOk ? (
+          <>
+            <button
+              className="btn fingerprint"
+              type="button"
+              disabled={busy}
+              onClick={() => void onFingerprint()}
+            >
+              Sign in with fingerprint
+            </button>
+            <p className="muted" style={{ margin: 0, fontSize: "0.82rem" }}>
+              Optional: enter email first if this device has more than one account.
+            </p>
+          </>
+        ) : null}
+
         {googleConfigured ? (
           <a className="btn google" href="/api/auth/google">
             Continue with Google
@@ -91,7 +150,14 @@ export default function LoginPage() {
         <form className="form-grid" onSubmit={onLogin}>
           <label>
             Email
-            <input name="email" type="email" required autoComplete="email" />
+            <input
+              name="email"
+              type="email"
+              required
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </label>
           <label>
             Password

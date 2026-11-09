@@ -67,6 +67,17 @@ textarea {
   );
 }
 
+.m-stripe-animated {
+  background-size: 200% 100%;
+  animation: mStripeSlide 4.5s linear infinite;
+}
+
+.m-stripe-thin {
+  height: 2px;
+  margin: -1.05rem -1.05rem 0.9rem;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
 .topbar {
   position: sticky;
   top: 0;
@@ -97,11 +108,6 @@ textarea {
   height: auto;
   width: min(240px, 70vw);
   margin: 0 auto 1.1rem;
-}
-
-.shop-link {
-  color: var(--muted);
-  font-size: 0.8rem;
 }
 
 .page-main {
@@ -194,13 +200,103 @@ textarea {
   line-height: 1.45;
 }
 
+.home-stage {
+  position: relative;
+  overflow: hidden;
+}
+
+.home-stage .home-hero,
+.home-stage .home-progress-wrap,
+.home-stage .home-action {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 520ms ease,
+    transform 520ms ease;
+}
+
+.home-stage.is-in .home-hero {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 80ms;
+}
+
+.home-stage.is-in .home-progress-wrap {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 220ms;
+}
+
+.home-stage.is-in .home-action:nth-child(1) {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 320ms;
+}
+
+.home-stage.is-in .home-action:nth-child(2) {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 420ms;
+}
+
+.home-m-glow {
+  pointer-events: none;
+  position: absolute;
+  inset: -10% -20% auto;
+  height: 220px;
+  background:
+    radial-gradient(circle at 20% 40%, rgba(0, 160, 227, 0.18), transparent 55%),
+    radial-gradient(circle at 55% 30%, rgba(28, 105, 212, 0.14), transparent 50%),
+    radial-gradient(circle at 85% 45%, rgba(229, 26, 45, 0.12), transparent 50%);
+  animation: mGlowPulse 5.5s ease-in-out infinite;
+}
+
+.home-m-bars {
+  pointer-events: none;
+  position: absolute;
+  right: 0.2rem;
+  top: 0.4rem;
+  display: flex;
+  gap: 0.35rem;
+  height: 54px;
+  opacity: 0.55;
+}
+
+.home-m-bars span {
+  width: 7px;
+  border-radius: 3px;
+  transform: skewX(-18deg) scaleY(0.35);
+  transform-origin: bottom;
+  animation: mBarRise 1.6s ease forwards;
+}
+
+.home-m-bars span:nth-child(1) {
+  background: var(--m-cyan);
+  animation-delay: 120ms;
+}
+
+.home-m-bars span:nth-child(2) {
+  background: var(--m-blue);
+  animation-delay: 220ms;
+}
+
+.home-m-bars span:nth-child(3) {
+  background: var(--m-red);
+  animation-delay: 320ms;
+}
+
+.home-copy {
+  margin: 0.15rem auto 0 !important;
+}
+
 .home-actions {
   display: grid;
   gap: 0.7rem;
   margin-top: 1.4rem;
 }
 
-.home-actions a {
+.home-actions a,
+.home-action {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -209,21 +305,36 @@ textarea {
   border-radius: var(--radius);
   background: var(--bg-elevated);
   border: 1px solid var(--line);
+  position: relative;
+  overflow: hidden;
 }
 
-.home-actions a strong {
+.home-action::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--m-cyan), var(--m-blue), var(--m-red));
+}
+
+.home-actions a strong,
+.home-action strong {
   display: block;
   font-family: var(--font-display), sans-serif;
   font-size: 1rem;
   margin-bottom: 0.15rem;
 }
 
-.home-actions a span {
+.home-actions a span span,
+.home-action span span {
   color: var(--muted);
   font-size: 0.88rem;
 }
 
-.home-actions a em {
+.home-actions a em,
+.home-action em {
   font-style: normal;
   color: var(--m-cyan);
   font-size: 1.2rem;
@@ -516,6 +627,17 @@ select {
   border-radius: var(--radius);
   background: var(--bg-elevated);
   border: 1px solid var(--line);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 450ms ease,
+    transform 450ms ease;
+}
+
+.progress-card.is-ready {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .progress-head {
@@ -550,10 +672,25 @@ select {
 }
 
 .progress-fill {
+  position: relative;
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--m-cyan), var(--m-blue) 55%, var(--m-red));
-  transition: width 400ms ease;
+  transition: width 900ms cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: hidden;
+}
+
+.progress-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.35) 45%,
+    transparent 70%
+  );
+  transform: translateX(-120%);
+  animation: progressSheen 2.2s ease-in-out 0.6s infinite;
 }
 
 .progress-steps {
@@ -568,10 +705,86 @@ select {
   color: var(--muted);
   text-align: center;
   line-height: 1.2;
+  opacity: 0.55;
+  transform: translateY(4px);
+  transition:
+    color 350ms ease,
+    opacity 350ms ease,
+    transform 350ms ease;
 }
 
 .progress-steps span.done {
   color: var(--text);
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.btn.fingerprint {
+  background: linear-gradient(90deg, var(--m-cyan), var(--m-blue));
+  color: #041018;
+}
+
+@keyframes mStripeSlide {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+@keyframes mGlowPulse {
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes mBarRise {
+  from {
+    transform: skewX(-18deg) scaleY(0.2);
+    opacity: 0;
+  }
+  to {
+    transform: skewX(-18deg) scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes progressSheen {
+  0%,
+  25% {
+    transform: translateX(-120%);
+  }
+  55%,
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .m-stripe-animated,
+  .home-m-glow,
+  .home-m-bars span,
+  .progress-sheen {
+    animation: none !important;
+  }
+
+  .home-stage .home-hero,
+  .home-stage .home-progress-wrap,
+  .home-stage .home-action,
+  .progress-card,
+  .progress-fill,
+  .progress-steps span {
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 .segmented {

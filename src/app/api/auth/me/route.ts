@@ -10,6 +10,7 @@ import {
 import { vehicleLabel } from "../../../../lib/bookings";
 import { bookingProgress } from "../../../../lib/progress";
 import { STATUS_LABELS } from "../../../../lib/types";
+import { countCredentials } from "../../../../lib/webauthn";
 
 export const dynamic = "force-dynamic";
 
@@ -18,14 +19,15 @@ export async function GET() {
   const customer = await getCustomerBySession(jar.get(CUSTOMER_COOKIE)?.value);
   if (!customer) {
     return Response.json(
-      { customer: null, googleConfigured: googleOAuthConfigured() },
+      { customer: null, googleConfigured: googleOAuthConfigured(), passkeyCount: 0 },
       { headers: { "cache-control": "private, no-store" } },
     );
   }
 
-  const [vehicles, current] = await Promise.all([
+  const [vehicles, current, passkeyCount] = await Promise.all([
     listVehicles(customer.id),
     currentBookingForCustomer(customer.id),
+    countCredentials(customer.id),
   ]);
 
   let currentBooking = null;
@@ -49,6 +51,7 @@ export async function GET() {
       customer: publicCustomer(customer),
       vehicles,
       googleConfigured: googleOAuthConfigured(),
+      passkeyCount,
       currentBooking,
     },
     { headers: { "cache-control": "private, no-store" } },

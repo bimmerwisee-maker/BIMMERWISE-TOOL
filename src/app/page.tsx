@@ -16,6 +16,7 @@ type MePayload = {
 
 export default function HomePage() {
   const [me, setMe] = useState<MePayload | null>(null);
+  const [entered, setEntered] = useState(false);
 
   const load = useCallback(async () => {
     const res = await fetch("/api/auth/me");
@@ -25,54 +26,67 @@ export default function HomePage() {
 
   useEffect(() => {
     void load();
+    const id = window.setTimeout(() => setEntered(true), 40);
+    return () => window.clearTimeout(id);
   }, [load]);
 
   const booking = me?.currentBooking;
 
   return (
     <AppShell active="home">
-      <section className="hero center">
-        <BrandLogo size="hero" href={null} />
-        <p>
-          {me?.customer
-            ? `Welcome back, ${me.customer.name}.`
-            : "Independent BMW & MINI service booking."}
-        </p>
-      </section>
+      <div className={`home-stage ${entered ? "is-in" : ""}`}>
+        <div className="home-m-glow" aria-hidden />
+        <div className="home-m-bars" aria-hidden>
+          <span />
+          <span />
+          <span />
+        </div>
 
-      {booking ? (
-        <ProgressBar
-          percent={booking.progress_percent}
-          label={booking.progress_label}
-          vehicle={booking.vehicle}
-        />
-      ) : null}
+        <section className="hero center home-hero">
+          <BrandLogo size="hero" href={null} />
+          <p className="home-copy">
+            {me?.customer
+              ? `Welcome back, ${me.customer.name}.`
+              : "Independent BMW & MINI service booking."}
+          </p>
+        </section>
 
-      <div className="home-actions">
-        <a href="/book">
-          <span>
-            <strong>Book service</strong>
-            <span>Guest or saved vehicle</span>
-          </span>
-          <em>→</em>
-        </a>
-        {me?.customer ? (
-          <a href="/profile">
+        {booking ? (
+          <div className="home-progress-wrap">
+            <ProgressBar
+              percent={booking.progress_percent}
+              label={booking.progress_label}
+              vehicle={booking.vehicle}
+            />
+          </div>
+        ) : null}
+
+        <div className="home-actions">
+          <a href="/book" className="home-action">
             <span>
-              <strong>My profile</strong>
-              <span>Vehicles and photo</span>
+              <strong>Book service</strong>
+              <span>Guest or saved vehicle</span>
             </span>
             <em>→</em>
           </a>
-        ) : (
-          <a href="/register">
-            <span>
-              <strong>Register</strong>
-              <span>Email or Google</span>
-            </span>
-            <em>→</em>
-          </a>
-        )}
+          {me?.customer ? (
+            <a href="/profile" className="home-action">
+              <span>
+                <strong>My profile</strong>
+                <span>Vehicles and fingerprint login</span>
+              </span>
+              <em>→</em>
+            </a>
+          ) : (
+            <a href="/register" className="home-action">
+              <span>
+                <strong>Register</strong>
+                <span>Email or Google</span>
+              </span>
+              <em>→</em>
+            </a>
+          )}
+        </div>
       </div>
     </AppShell>
   );

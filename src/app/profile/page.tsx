@@ -2,6 +2,10 @@
 
 import { FormEvent, Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import {
+  browserSupportsWebAuthn,
+  startRegistration,
+} from "@simplewebauthn/browser";
 import { AppShell } from "../../components/AppShell";
 
 type Customer = {
@@ -30,12 +34,15 @@ function ProfileInner() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(true);
+  const [passkeyCount, setPasskeyCount] = useState(0);
+  const [webauthnOk, setWebauthnOk] = useState(false);
 
   const refresh = useCallback(async () => {
     const res = await fetch("/api/auth/me");
     const data = await res.json();
     setCustomer(data.customer);
     setVehicles(data.vehicles ?? []);
+    setPasskeyCount(Number(data.passkeyCount ?? 0));
     setLoading(false);
     if (!data.customer) {
       router.replace("/register");
@@ -43,10 +50,42 @@ function ProfileInner() {
   }, [router]);
 
   useEffect(() => {
+    setWebauthnOk(browserSupportsWebAuthn());
     void refresh();
     if (search.get("welcome")) setNotice("Signed in successfully.");
     if (search.get("error")) setError("Google sign-in failed. Try again.");
   }, [refresh, search]);
+
+  async function onEnableFingerprint() {
+    setBusy(true);
+    setError("");
+    try {
+      const optRes = await fetch("/api/auth/webauthn/register/options", {
+        method: "POST",
+      });
+      if (!optRes.ok) {
+        setError("Could not start fingerprint setup.");
+        return;
+      }
+      const options = await optRes.json();
+      const attestation = await startRegistration({ optionsJSON: options });
+      const verifyRes = await fetch("/api/auth/webauthn/register/verify", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(attestation),
+      });
+      if (!verifyRes.ok) {
+        setError("Fingerprint setup failed. Try again on this device.");
+        return;
+      }
+      await refresh();
+      setNotice("Fingerprint login enabled on this device.");
+    } catch {
+      setError("Fingerprint setup cancelled or unavailable.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function onSaveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -189,6 +228,25 @@ function ProfileInner() {
           </button>
         </div>
       </form>
+
+      {webauthnOk ? (
+        <div className="panel section-gap form-grid">
+          <h3>Fingerprint login</h3>
+          <p className="muted" style={{ margin: 0 }}>
+            {passkeyCount > 0
+              ? `Enabled on ${passkeyCount} device passkey${passkeyCount === 1 ? "" : "s"}. You can add another device.`
+              : "Enable Face ID / fingerprint so you can unlock the app without typing a password."}
+          </p>
+          <button
+            className="btn fingerprint"
+            type="button"
+            disabled={busy}
+            onClick={() => void onEnableFingerprint()}
+          >
+            {passkeyCount > 0 ? "Add fingerprint on this device" : "Enable fingerprint login"}
+          </button>
+        </div>
+      ) : null}
 
       <div className="panel section-gap">
         <h3>My vehicles</h3>

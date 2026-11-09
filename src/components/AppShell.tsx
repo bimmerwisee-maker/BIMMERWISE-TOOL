@@ -52,12 +52,9 @@ export function AppShell({
 }) {
   return (
     <div className="app-shell">
-      <div className="m-stripe" aria-hidden />
+      <div className="m-stripe m-stripe-animated" aria-hidden />
       <header className="topbar">
         <BrandLogo size="nav" />
-        <Link href="/admin" className="shop-link">
-          Shop
-        </Link>
       </header>
       <main className="page-main">{children}</main>
       <nav className="bottom-nav" aria-label="Main">
@@ -65,7 +62,11 @@ export function AppShell({
           <Link
             key={tab.id}
             href={tab.href}
-            className={active === tab.id || (active === "register" && tab.id === "profile") ? "active" : undefined}
+            className={
+              active === tab.id || (active === "register" && tab.id === "profile")
+                ? "active"
+                : undefined
+            }
           >
             {tab.icon}
             <span>{tab.label}</span>
