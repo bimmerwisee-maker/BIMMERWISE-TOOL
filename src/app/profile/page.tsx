@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, Suspense, useCallback, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AppShell } from "../../components/AppShell";
 
 type Customer = {
@@ -22,91 +22,31 @@ type Vehicle = {
 };
 
 function ProfileInner() {
+  const router = useRouter();
   const search = useSearchParams();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [googleConfigured, setGoogleConfigured] = useState(false);
-  const [authMode, setAuthMode] = useState<"register" | "login">("register");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
     const res = await fetch("/api/auth/me");
     const data = await res.json();
     setCustomer(data.customer);
     setVehicles(data.vehicles ?? []);
-    setGoogleConfigured(Boolean(data.googleConfigured));
-  }, []);
+    setLoading(false);
+    if (!data.customer) {
+      router.replace("/register");
+    }
+  }, [router]);
 
   useEffect(() => {
     void refresh();
     if (search.get("welcome")) setNotice("Signed in successfully.");
     if (search.get("error")) setError("Google sign-in failed. Try again.");
   }, [refresh, search]);
-
-  async function onRegister(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setBusy(true);
-    setError("");
-    const form = new FormData(event.currentTarget);
-    try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(Object.fromEntries(form.entries())),
-      });
-      if (res.status === 409) {
-        setError("That email is already registered. Sign in instead.");
-        return;
-      }
-      if (!res.ok) {
-        setError("Could not register. Use a valid email and 8+ character password.");
-        return;
-      }
-      await refresh();
-      setNotice("Account created.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function onLogin(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setBusy(true);
-    setError("");
-    const form = new FormData(event.currentTarget);
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(Object.fromEntries(form.entries())),
-      });
-      if (!res.ok) {
-        setError("Wrong email or password.");
-        return;
-      }
-      await refresh();
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function onSampleGoogle() {
-    setBusy(true);
-    setError("");
-    try {
-      const res = await fetch("/api/auth/sample-google", { method: "POST" });
-      if (!res.ok) {
-        setError("Sample Google sign-in is only available in local development.");
-        return;
-      }
-      await refresh();
-      setNotice("Signed in with sample Google profile.");
-    } finally {
-      setBusy(false);
-    }
-  }
 
   async function onSaveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -182,100 +122,11 @@ function ProfileInner() {
 
   async function onLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
-    await refresh();
-    setNotice("Signed out.");
+    router.push("/login");
   }
 
-  if (!customer) {
-    return (
-      <>
-        <section className="hero">
-          <p className="eyebrow">Account</p>
-          <h1>My profile</h1>
-          <p>Register with Google or email to save vehicles and follow bay progress on Home.</p>
-        </section>
-
-        <div className="panel form-grid">
-          {googleConfigured ? (
-            <a className="btn google" href="/api/auth/google">
-              Continue with Google
-            </a>
-          ) : (
-            <>
-              <div className="sample-banner">
-                Google sign-in needs Google OAuth secrets in production. Locally you can use a
-                sample Google profile, or register with email.
-              </div>
-              <button
-                className="btn google"
-                type="button"
-                disabled={busy}
-                onClick={() => void onSampleGoogle()}
-              >
-                Continue with Google (sample)
-              </button>
-            </>
-          )}
-
-          <div className="segmented">
-            <button
-              type="button"
-              className={authMode === "register" ? "active" : undefined}
-              onClick={() => setAuthMode("register")}
-            >
-              Register
-            </button>
-            <button
-              type="button"
-              className={authMode === "login" ? "active" : undefined}
-              onClick={() => setAuthMode("login")}
-            >
-              Sign in
-            </button>
-          </div>
-
-          {authMode === "register" ? (
-            <form className="form-grid" onSubmit={onRegister}>
-              <label>
-                Name
-                <input name="name" required maxLength={120} />
-              </label>
-              <label>
-                Phone
-                <input name="phone" maxLength={40} />
-              </label>
-              <label>
-                Email
-                <input name="email" type="email" required maxLength={120} />
-              </label>
-              <label>
-                Password (8+)
-                <input name="password" type="password" required minLength={8} />
-              </label>
-              {error ? <p className="error">{error}</p> : null}
-              <button className="btn" type="submit" disabled={busy}>
-                Create account
-              </button>
-            </form>
-          ) : (
-            <form className="form-grid" onSubmit={onLogin}>
-              <label>
-                Email
-                <input name="email" type="email" required />
-              </label>
-              <label>
-                Password
-                <input name="password" type="password" required />
-              </label>
-              {error ? <p className="error">{error}</p> : null}
-              <button className="btn" type="submit" disabled={busy}>
-                Sign in
-              </button>
-            </form>
-          )}
-        </div>
-      </>
-    );
+  if (loading || !customer) {
+    return <p className="muted">Loading profile…</p>;
   }
 
   return (

@@ -53,9 +53,13 @@ export default function HomePage() {
           <strong>Book service</strong>
           <span>Guest checkout or book with a saved vehicle.</span>
         </a>
+        <a className="action-link" href="/register">
+          <strong>Register</strong>
+          <span>Create an account with email or Google, then add vehicles.</span>
+        </a>
         <a className="action-link" href="/profile">
           <strong>My profile</strong>
-          <span>Register, add vehicles (VIN last 7), upload a photo.</span>
+          <span>Manage vehicles (VIN last 7) and upload a photo.</span>
         </a>
         <a className="action-link" href="/track">
           <strong>Track with code</strong>

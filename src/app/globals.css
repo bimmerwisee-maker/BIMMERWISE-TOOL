@@ -90,27 +90,64 @@ textarea {
   display: inline-flex;
   align-items: center;
   gap: 0.65rem;
+  line-height: 0;
 }
 
-.brand-mark {
-  width: 1.55rem;
-  height: 1.55rem;
-  border-radius: 0.35rem;
-  background:
-    linear-gradient(90deg, var(--m-cyan) 0 33%, var(--m-blue) 33% 66%, var(--m-red) 66% 100%);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+.brand-logo {
+  height: 34px;
+  width: auto;
+  display: block;
 }
 
-.brand-text {
+.brand-logo-hero {
+  height: auto;
+  width: min(280px, 78vw);
+  margin: 0 auto 1rem;
+}
+
+.brand-mark-img {
+  width: 1.7rem;
+  height: 1.7rem;
+  object-fit: contain;
+  display: block;
+}
+
+.register-hero {
+  text-align: center;
+  padding: 0.4rem 0 0.2rem;
+  animation: riseIn 480ms ease both;
+}
+
+.register-hero h1 {
+  margin: 0;
   font-family: var(--font-display), sans-serif;
-  font-weight: 700;
-  font-size: 1.2rem;
+  font-size: clamp(1.6rem, 6vw, 2.2rem);
   letter-spacing: -0.04em;
   text-transform: uppercase;
 }
 
-.brand-text span {
-  color: var(--m-cyan);
+.register-hero p {
+  margin: 0.65rem auto 0;
+  color: var(--muted);
+  max-width: 34ch;
+}
+
+.auth-divider {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0.75rem;
+  align-items: center;
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  height: 1px;
+  background: var(--line);
 }
 
 .shop-link {

@@ -108,7 +108,7 @@ export default function BookPage() {
       </div>
       {!loggedIn ? (
         <p className="muted" style={{ marginTop: "0.65rem", fontSize: "0.86rem" }}>
-          Want saved vehicles? <a href="/profile">Register or sign in with Google</a>.
+          Want saved vehicles? <a href="/register">Register with email or Google</a>.
         </p>
       ) : null}
 

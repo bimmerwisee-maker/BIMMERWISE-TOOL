@@ -15,7 +15,7 @@ export async function GET(request: Request) {
   const expected = jar.get("bw_oauth_state")?.value;
 
   if (!code || !state || !expected || state !== expected) {
-    return Response.redirect(new URL("/profile?error=oauth", url.origin), 302);
+    return Response.redirect(new URL("/register?error=oauth", url.origin), 302);
   }
 
   const origin = `${url.protocol}//${url.host}`;
@@ -34,19 +34,19 @@ export async function GET(request: Request) {
   });
 
   if (!tokenRes.ok) {
-    return Response.redirect(new URL("/profile?error=token", url.origin), 302);
+    return Response.redirect(new URL("/register?error=token", url.origin), 302);
   }
 
   const tokenJson = (await tokenRes.json()) as { access_token?: string };
   if (!tokenJson.access_token) {
-    return Response.redirect(new URL("/profile?error=token", url.origin), 302);
+    return Response.redirect(new URL("/register?error=token", url.origin), 302);
   }
 
   const profileRes = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
     headers: { authorization: `Bearer ${tokenJson.access_token}` },
   });
   if (!profileRes.ok) {
-    return Response.redirect(new URL("/profile?error=profile", url.origin), 302);
+    return Response.redirect(new URL("/register?error=profile", url.origin), 302);
   }
 
   const profile = (await profileRes.json()) as {
@@ -57,7 +57,7 @@ export async function GET(request: Request) {
   };
 
   if (!profile.id || !profile.email) {
-    return Response.redirect(new URL("/profile?error=profile", url.origin), 302);
+    return Response.redirect(new URL("/register?error=profile", url.origin), 302);
   }
 
   const customer = await upsertGoogleCustomer({

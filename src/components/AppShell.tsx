@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandLogo } from "./BrandLogo";
 
 const tabs = [
   {
@@ -47,18 +48,13 @@ export function AppShell({
   active,
 }: {
   children: React.ReactNode;
-  active?: "home" | "book" | "track" | "admin" | "profile";
+  active?: "home" | "book" | "track" | "admin" | "profile" | "register";
 }) {
   return (
     <div className="app-shell">
       <div className="m-stripe" aria-hidden />
       <header className="topbar">
-        <Link href="/" className="brand" aria-label="BimmerWise home">
-          <span className="brand-mark" aria-hidden />
-          <span className="brand-text">
-            Bimmer<span>Wise</span>
-          </span>
-        </Link>
+        <BrandLogo size="nav" />
         <Link href="/admin" className="shop-link">
           Shop
         </Link>
@@ -69,7 +65,7 @@ export function AppShell({
           <Link
             key={tab.id}
             href={tab.href}
-            className={active === tab.id ? "active" : undefined}
+            className={active === tab.id || (active === "register" && tab.id === "profile") ? "active" : undefined}
           >
             {tab.icon}
             <span>{tab.label}</span>
