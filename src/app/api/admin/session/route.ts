@@ -7,7 +7,7 @@ export async function GET(request: Request) {
   return Response.json(
     {
       admin,
-      passwordFallback: !adminPasswordConfigured(),
+      passwordLoginAvailable: adminPasswordConfigured(),
     },
     { headers: { "cache-control": "private, no-store" } },
   );

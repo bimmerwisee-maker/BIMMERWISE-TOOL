@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { ADMIN_COOKIE, destroyAdminSession } from "../../../../lib/auth";
+import { ADMIN_COOKIE, adminClearCookie, destroyAdminSession } from "../../../../lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -11,9 +11,6 @@ export async function POST() {
     { ok: true },
     { headers: { "cache-control": "private, no-store" } },
   );
-  response.headers.append(
-    "set-cookie",
-    `${ADMIN_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`,
-  );
+  response.headers.append("set-cookie", adminClearCookie());
   return response;
 }

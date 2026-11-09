@@ -28,7 +28,10 @@ export default function BookPage() {
         setError("Could not create booking. Check the required fields.");
         return;
       }
-      router.push(`/track?code=${encodeURIComponent(data.booking.code)}`);
+      const email = encodeURIComponent(String(payload.customer_email ?? ""));
+      router.push(
+        `/track?code=${encodeURIComponent(data.booking.code)}&email=${email}`,
+      );
     } catch {
       setError("Network error. Try again.");
     } finally {
@@ -59,6 +62,7 @@ export default function BookPage() {
           <input
             name="customer_email"
             type="email"
+            required
             maxLength={120}
             placeholder="you@email.com"
           />

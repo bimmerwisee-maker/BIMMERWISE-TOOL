@@ -6,7 +6,7 @@ import { AppShell } from "../../components/AppShell";
 import { StatusBadge } from "../../components/StatusBadge";
 import type { Booking, BookingStatus } from "../../lib/types";
 
-type Session = { admin: boolean; passwordFallback: boolean };
+type Session = { admin: boolean; passwordLoginAvailable: boolean };
 
 export default function AdminPage() {
   const [session, setSession] = useState<Session | null>(null);
@@ -43,6 +43,10 @@ export default function AdminPage() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ password }),
       });
+      if (res.status === 503) {
+        setError("Admin password is not configured for this deployment.");
+        return;
+      }
       if (!res.ok) {
         setError("Wrong password.");
         return;
@@ -70,10 +74,10 @@ export default function AdminPage() {
 
       {!session?.admin ? (
         <form className="panel form-grid" onSubmit={onLogin}>
-          {session?.passwordFallback ? (
+          {!session?.passwordLoginAvailable ? (
             <div className="sample-banner">
-              Sample mode: set the <code>BOOKING_ADMIN_PASSWORD</code> secret for production.
-              Local demo password is <code>bimmerwise-demo</code>.
+              Password login needs the app admin secret configured. Cursor team
+              admins can open the console when the app is published for the team.
             </div>
           ) : null}
           <label>
@@ -84,17 +88,22 @@ export default function AdminPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete="current-password"
+              disabled={!session?.passwordLoginAvailable}
             />
           </label>
           {error ? <p className="error">{error}</p> : null}
           <div className="btn-row">
-            <button className="btn" type="submit" disabled={busy}>
+            <button
+              className="btn"
+              type="submit"
+              disabled={busy || !session?.passwordLoginAvailable}
+            >
               {busy ? "Signing in…" : "Open console"}
             </button>
+            <button className="btn secondary" type="button" onClick={() => void refresh()}>
+              Check team access
+            </button>
           </div>
-          <p className="muted" style={{ margin: 0, fontSize: "0.86rem" }}>
-            Cursor team admins are also admitted automatically when the app is published for the team.
-          </p>
         </form>
       ) : (
         <>

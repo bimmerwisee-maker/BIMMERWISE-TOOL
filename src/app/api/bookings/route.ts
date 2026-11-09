@@ -34,14 +34,17 @@ export async function POST(request: Request) {
   const vehicle_model = clean(body.vehicle_model, 80);
   const service_type = clean(body.service_type, 80);
   const customer_phone = clean(body.customer_phone, 40);
-  const customer_email = clean(body.customer_email, 120);
+  const customer_email = clean(body.customer_email, 120).toLowerCase();
   const vehicle_year = clean(body.vehicle_year, 8);
   const vehicle_plate = clean(body.vehicle_plate, 20);
   const customer_notes = clean(body.customer_notes, 1000);
   const scheduledRaw = clean(body.scheduled_at, 40);
 
-  if (!customer_name || !vehicle_make || !vehicle_model || !service_type) {
+  if (!customer_name || !vehicle_make || !vehicle_model || !service_type || !customer_email) {
     return Response.json({ error: "missing_fields" }, { status: 400 });
+  }
+  if (!customer_email.includes("@")) {
+    return Response.json({ error: "invalid_email" }, { status: 400 });
   }
   if (!(SERVICE_TYPES as readonly string[]).includes(service_type)) {
     return Response.json({ error: "invalid_service" }, { status: 400 });

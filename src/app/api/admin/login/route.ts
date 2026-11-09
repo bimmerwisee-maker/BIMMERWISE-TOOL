@@ -1,8 +1,35 @@
-import { ADMIN_COOKIE, createAdminSession, verifyAdminLogin } from "../../../../lib/auth";
+import {
+  adminPasswordConfigured,
+  adminSetCookie,
+  createAdminSession,
+  verifyAdminLogin,
+} from "../../../../lib/auth";
+import { clientKey, takeToken } from "../../../../lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
+  const limited = takeToken(`admin-login:${clientKey(request)}`, 10, 60_000);
+  if (!limited.ok) {
+    return Response.json(
+      { error: "rate_limited" },
+      {
+        status: 429,
+        headers: {
+          "retry-after": String(limited.retryAfterSec),
+          "cache-control": "private, no-store",
+        },
+      },
+    );
+  }
+
+  if (!adminPasswordConfigured()) {
+    return Response.json(
+      { error: "password_not_configured" },
+      { status: 503, headers: { "cache-control": "private, no-store" } },
+    );
+  }
+
   let body: { password?: string };
   try {
     body = await request.json();
@@ -20,9 +47,6 @@ export async function POST(request: Request) {
     { ok: true },
     { headers: { "cache-control": "private, no-store" } },
   );
-  response.headers.append(
-    "set-cookie",
-    `${ADMIN_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}`,
-  );
+  response.headers.append("set-cookie", adminSetCookie(token));
   return response;
 }

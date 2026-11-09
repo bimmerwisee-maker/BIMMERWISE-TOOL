@@ -10,13 +10,8 @@ import { sql } from "./db";
 export const ADMIN_COOKIE = "bw_admin_session";
 const SESSION_DAYS = 7;
 
-/** Demo-only fallback when BOOKING_ADMIN_PASSWORD is unset on this VM. */
 export function adminPasswordConfigured(): boolean {
   return Boolean(process.env.BOOKING_ADMIN_PASSWORD?.trim());
-}
-
-function expectedAdminPassword(): string {
-  return process.env.BOOKING_ADMIN_PASSWORD?.trim() || "bimmerwise-demo";
 }
 
 export function passwordsMatch(provided: string, expected: string): boolean {
@@ -24,6 +19,35 @@ export function passwordsMatch(provided: string, expected: string): boolean {
   const b = Buffer.from(expected);
   if (a.length !== b.length) return false;
   return timingSafeEqual(a, b);
+}
+
+export function adminSetCookie(token: string): string {
+  const maxAge = SESSION_DAYS * 24 * 60 * 60;
+  const parts = [
+    `${ADMIN_COOKIE}=${token}`,
+    "Path=/",
+    "HttpOnly",
+    "SameSite=Lax",
+    `Max-Age=${maxAge}`,
+  ];
+  if (process.env.NODE_ENV === "production") {
+    parts.push("Secure");
+  }
+  return parts.join("; ");
+}
+
+export function adminClearCookie(): string {
+  const parts = [
+    `${ADMIN_COOKIE}=`,
+    "Path=/",
+    "HttpOnly",
+    "SameSite=Lax",
+    "Max-Age=0",
+  ];
+  if (process.env.NODE_ENV === "production") {
+    parts.push("Secure");
+  }
+  return parts.join("; ");
 }
 
 export async function createAdminSession(): Promise<string> {
@@ -74,5 +98,7 @@ export async function isAdminRequest(request: Request): Promise<boolean> {
 }
 
 export async function verifyAdminLogin(password: string): Promise<boolean> {
-  return passwordsMatch(password, expectedAdminPassword());
+  const expected = process.env.BOOKING_ADMIN_PASSWORD?.trim() ?? "";
+  if (!expected || !password) return false;
+  return passwordsMatch(password, expected);
 }

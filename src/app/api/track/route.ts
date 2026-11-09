@@ -1,16 +1,38 @@
 import { getBookingByCode, listPhotos, listUpdates, vehicleLabel } from "../../../lib/bookings";
 import { STATUS_LABELS } from "../../../lib/types";
+import { clientKey, takeToken } from "../../../lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
+function emailsMatch(a: string, b: string): boolean {
+  return a.trim().toLowerCase() === b.trim().toLowerCase();
+}
+
 export async function GET(request: Request) {
-  const code = new URL(request.url).searchParams.get("code")?.trim() ?? "";
-  if (!code || code.length > 32) {
-    return Response.json({ error: "missing_code" }, { status: 400 });
+  const limited = takeToken(`track:${clientKey(request)}`, 20, 60_000);
+  if (!limited.ok) {
+    return Response.json(
+      { error: "rate_limited" },
+      {
+        status: 429,
+        headers: {
+          "retry-after": String(limited.retryAfterSec),
+          "cache-control": "private, no-store",
+        },
+      },
+    );
+  }
+
+  const url = new URL(request.url);
+  const code = url.searchParams.get("code")?.trim() ?? "";
+  const email = url.searchParams.get("email")?.trim() ?? "";
+
+  if (!code || code.length > 64 || !email || email.length > 120) {
+    return Response.json({ error: "missing_credentials" }, { status: 400 });
   }
 
   const booking = await getBookingByCode(code);
-  if (!booking) {
+  if (!booking || !booking.customer_email || !emailsMatch(booking.customer_email, email)) {
     return Response.json({ error: "not_found" }, { status: 404 });
   }
 

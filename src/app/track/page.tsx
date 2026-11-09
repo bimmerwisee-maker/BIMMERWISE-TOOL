@@ -1,8 +1,7 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
 import { AppShell } from "../../components/AppShell";
 import { StatusBadge } from "../../components/StatusBadge";
 import type { BookingStatus } from "../../lib/types";
@@ -38,22 +37,34 @@ type TrackPayload = {
 function TrackInner() {
   const search = useSearchParams();
   const initialCode = search.get("code") ?? "";
+  const initialEmail = search.get("email") ?? "";
   const [code, setCode] = useState(initialCode);
+  const [email, setEmail] = useState(initialEmail);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [data, setData] = useState<TrackPayload | null>(null);
 
-  async function load(nextCode: string) {
-    const trimmed = nextCode.trim();
-    if (!trimmed) return;
+  async function load(nextCode: string, nextEmail: string) {
+    const trimmedCode = nextCode.trim();
+    const trimmedEmail = nextEmail.trim();
+    if (!trimmedCode || !trimmedEmail) return;
     setBusy(true);
     setError("");
     try {
-      const res = await fetch(`/api/track?code=${encodeURIComponent(trimmed)}`);
+      const params = new URLSearchParams({
+        code: trimmedCode,
+        email: trimmedEmail,
+      });
+      const res = await fetch(`/api/track?${params.toString()}`);
       const json = await res.json();
+      if (res.status === 429) {
+        setData(null);
+        setError("Too many attempts. Wait a minute and try again.");
+        return;
+      }
       if (!res.ok) {
         setData(null);
-        setError("No booking found for that code.");
+        setError("No booking found for that code and email.");
         return;
       }
       setData(json);
@@ -65,22 +76,22 @@ function TrackInner() {
   }
 
   useEffect(() => {
-    if (initialCode) {
-      void load(initialCode);
+    if (initialCode && initialEmail) {
+      void load(initialCode, initialEmail);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialCode]);
+  }, [initialCode, initialEmail]);
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();
-    void load(code);
+    void load(code, email);
   }
 
   return (
     <>
       <section className="hero">
         <h1>Track my vehicle</h1>
-        <p>Use the booking code from your confirmation to see live shop updates.</p>
+        <p>Use your booking code and the email from your booking to see live shop updates.</p>
       </section>
 
       <form className="panel form-grid" onSubmit={onSubmit}>
@@ -89,8 +100,19 @@ function TrackInner() {
           <input
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
-            placeholder="BW-A1B2C3"
-            maxLength={32}
+            placeholder="BW-…"
+            maxLength={64}
+            required
+          />
+        </label>
+        <label>
+          Email used for booking
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@email.com"
+            maxLength={120}
             required
           />
         </label>

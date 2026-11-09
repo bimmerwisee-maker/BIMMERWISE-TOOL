@@ -3,7 +3,7 @@ import { sql } from "./db";
 import type { Booking, BookingStatus, BookingUpdate, VehiclePhoto } from "./types";
 
 export function newBookingCode(): string {
-  return `BW-${randomBytes(3).toString("hex").toUpperCase()}`;
+  return `BW-${randomBytes(16).toString("hex").toUpperCase()}`;
 }
 
 export async function createBooking(input: {
