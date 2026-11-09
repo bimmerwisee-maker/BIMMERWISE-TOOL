@@ -1,5 +1,14 @@
 import Link from "next/link";
 import { BrandLogo } from "./BrandLogo";
+import { ABOUT } from "../lib/content";
+
+const MAPS_URL =
+  "https://www.google.com/maps/dir/?api=1&destination=" +
+  encodeURIComponent(ABOUT.contact.address);
+
+const REVIEW_URL =
+  "https://www.google.com/search?q=" +
+  encodeURIComponent("Bimmerwise Lusk Dublin reviews");
 
 const tabs = [
   {
@@ -61,9 +70,28 @@ export function AppShell({
 }) {
   return (
     <div className="app-shell">
-      <div className="m-stripe m-stripe-animated" aria-hidden />
+      <div className="app-bg" aria-hidden />
+      <div className="m-stripe" aria-hidden />
       <header className="topbar">
         <BrandLogo size="nav" />
+        <div className="topbar-actions">
+          <a
+            className="topbar-link"
+            href={REVIEW_URL}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Leave a review
+          </a>
+          <a
+            className="topbar-link topbar-link-nav"
+            href={MAPS_URL}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Navigate
+          </a>
+        </div>
       </header>
       <main className="page-main">{children}</main>
       <nav className="bottom-nav" aria-label="Main">

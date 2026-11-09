@@ -1,12 +1,10 @@
 import { AppShell } from "../../components/AppShell";
-import { BrandLogo } from "../../components/BrandLogo";
 import { ABOUT } from "../../lib/content";
 
 export default function AboutPage() {
   return (
     <AppShell active="about">
-      <section className="hero center">
-        <BrandLogo size="hero" href={null} />
+      <section className="hero">
         <p className="eyebrow">{ABOUT.location}</p>
         <h1>{ABOUT.title}</h1>
         <p>{ABOUT.tagline}</p>

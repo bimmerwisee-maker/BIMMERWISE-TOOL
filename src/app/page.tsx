@@ -1,8 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AppShell } from "../components/AppShell";
-import { BrandLogo } from "../components/BrandLogo";
 import { ProgressBar } from "../components/ProgressBar";
 
 type GarageCar = {
@@ -49,6 +48,8 @@ const ACTIONS = [
 
 export default function HomePage() {
   const [me, setMe] = useState<MePayload | null>(null);
+  const [slide, setSlide] = useState(0);
+  const trackRef = useRef<HTMLDivElement | null>(null);
 
   const load = useCallback(async () => {
     const res = await fetch("/api/auth/me");
@@ -62,19 +63,24 @@ export default function HomePage() {
 
   const booking = me?.currentBooking;
   const garage = me?.customer ? me.vehicles ?? [] : [];
+  const activeCar = garage[slide] ?? garage[0] ?? null;
+
+  useEffect(() => {
+    if (slide >= garage.length) setSlide(0);
+  }, [garage.length, slide]);
+
+  function onScrollTrack() {
+    const el = trackRef.current;
+    if (!el || garage.length < 2) return;
+    const width = el.clientWidth || 1;
+    const next = Math.round(el.scrollLeft / width);
+    setSlide(Math.max(0, Math.min(garage.length - 1, next)));
+  }
 
   return (
     <AppShell active="home">
       <div className="home-stage">
-        <div className="home-m-glow" aria-hidden />
-        <div className="home-m-bars" aria-hidden>
-          <span />
-          <span />
-          <span />
-        </div>
-
-        <section className="hero center home-hero">
-          <BrandLogo size="hero" href={null} />
+        <section className="home-intro">
           <p className="home-copy">
             {me?.customer
               ? `Welcome back, ${me.customer.name}.`
@@ -83,26 +89,54 @@ export default function HomePage() {
         </section>
 
         {garage.length > 0 ? (
-          <section className="home-garage" aria-label="Your BMW models">
-            <div className="home-garage-head">
-              <h2>Your cars</h2>
-              <a href="/profile">Manage</a>
-            </div>
-            <div className="home-garage-track">
+          <section className="home-garage-hero" aria-label="Your registered car">
+            <div
+              className="home-garage-swipe"
+              ref={trackRef}
+              onScroll={onScrollTrack}
+            >
               {garage.map((car) => (
-                <article key={car.id} className="home-garage-card">
+                <article key={car.id} className="home-garage-slide">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={car.image_url || "/cars/generic.svg"}
+                    src={car.image_url || "/cars/photos/g20.png"}
                     alt={`${car.year} ${car.make} ${car.model}`}
                   />
-                  <strong>
-                    {car.year} {car.model}
-                  </strong>
-                  <span>{car.registration}</span>
+                  <div className="home-garage-meta">
+                    <strong>
+                      {car.year} {car.model}
+                    </strong>
+                    <span>{car.registration}</span>
+                  </div>
                 </article>
               ))}
             </div>
+            {garage.length > 1 ? (
+              <div className="home-garage-dots" aria-hidden>
+                {garage.map((car, index) => (
+                  <button
+                    key={car.id}
+                    type="button"
+                    className={index === slide ? "active" : undefined}
+                    onClick={() => {
+                      const el = trackRef.current;
+                      if (!el) return;
+                      el.scrollTo({
+                        left: index * el.clientWidth,
+                        behavior: "smooth",
+                      });
+                      setSlide(index);
+                    }}
+                  />
+                ))}
+              </div>
+            ) : null}
+            <p className="home-service-hint">
+              Remaining distance till the next service
+            </p>
+            {activeCar ? (
+              <p className="home-service-sub muted">Coming soon</p>
+            ) : null}
           </section>
         ) : null}
 
