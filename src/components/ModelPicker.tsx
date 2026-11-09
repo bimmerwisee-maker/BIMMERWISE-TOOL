@@ -22,6 +22,13 @@ const ALL_FUELS: FuelType[] = [
   "Electric",
 ];
 
+const FUEL_LABEL: Record<FuelType, string> = {
+  Petrol: "Petrol",
+  Diesel: "Diesel",
+  "Plugin Hybrid": "PHEV",
+  Electric: "Electric",
+};
+
 export function ModelPicker({
   yearName = "year",
   modelSlugName = "model_slug",
@@ -42,7 +49,7 @@ export function ModelPicker({
   const [loaded, setLoaded] = useState(false);
   const [series, setSeries] = useState("");
   const [year, setYear] = useState("");
-  const [fuel, setFuel] = useState("");
+  const [fuel, setFuel] = useState<FuelType | "">("");
   const [modelId, setModelId] = useState("");
   const [imgOk, setImgOk] = useState(true);
 
@@ -103,15 +110,21 @@ export function ModelPicker({
   }, [seriesModels, yearNum]);
 
   const fuels = useMemo(() => {
-    const available = new Set(
-      yearModels.map((m) => String(m.fuel || "").trim() as FuelType),
-    );
+    const available = new Set(yearModels.map((m) => m.fuel));
     return ALL_FUELS.filter((f) => available.has(f));
   }, [yearModels]);
 
+  // Keep fuel only when it is still valid for the chosen year.
+  useEffect(() => {
+    if (fuel && fuels.length > 0 && !fuels.includes(fuel)) {
+      setFuel("");
+      setModelId("");
+    }
+  }, [fuel, fuels]);
+
   const filtered = useMemo(() => {
     if (!fuel) return [] as ModelOption[];
-    return yearModels.filter((m) => String(m.fuel).trim() === fuel);
+    return yearModels.filter((m) => m.fuel === fuel);
   }, [yearModels, fuel]);
 
   const selected = useMemo(
@@ -139,6 +152,8 @@ export function ModelPicker({
         name={modelName}
         value={selected ? `${selected.series} ${selected.name}` : ""}
       />
+      {/* Hidden field so required fuel is part of native form validation. */}
+      <input type="hidden" name="fuel_type" value={fuel} required={required} />
 
       {!loaded ? <p className="muted">Loading BMW models…</p> : null}
 
@@ -174,7 +189,7 @@ export function ModelPicker({
             setModelId("");
           }}
           required={required}
-          disabled={!series}
+          disabled={!series || years.length === 0}
         >
           <option value="">Select year</option>
           {years.map((y) => (
@@ -185,31 +200,37 @@ export function ModelPicker({
         </select>
       </label>
 
-      <label>
-        Fuel type
-        <select
-          value={fuel}
-          onChange={(e) => {
-            setFuel(e.target.value);
-            setModelId("");
-          }}
-          required={required}
-          disabled={!year || fuels.length === 0}
-        >
-          <option value="">
-            {!year
-              ? "Select year first"
-              : fuels.length === 0
-                ? "No fuel types for this year"
-                : "Select fuel type"}
-          </option>
-          {fuels.map((f) => (
-            <option key={f} value={f}>
-              {f}
-            </option>
-          ))}
-        </select>
-      </label>
+      <fieldset className="fuel-fieldset" disabled={!year || fuels.length === 0}>
+        <legend>Fuel type</legend>
+        <div className="fuel-chips" role="group" aria-label="Fuel type">
+          {ALL_FUELS.map((f) => {
+            const available = fuels.includes(f);
+            const active = fuel === f;
+            return (
+              <button
+                key={f}
+                type="button"
+                className={`fuel-chip${active ? " active" : ""}`}
+                disabled={!year || !available}
+                aria-pressed={active}
+                onClick={() => {
+                  setFuel(f);
+                  setModelId("");
+                }}
+              >
+                {FUEL_LABEL[f]}
+              </button>
+            );
+          })}
+        </div>
+        {!year ? (
+          <p className="muted fuel-hint">Select a year first</p>
+        ) : fuels.length === 0 ? (
+          <p className="muted fuel-hint">No fuel types for this year</p>
+        ) : !fuel ? (
+          <p className="muted fuel-hint">Choose petrol, diesel, PHEV or electric</p>
+        ) : null}
+      </fieldset>
 
       <label>
         Model
@@ -234,34 +255,40 @@ export function ModelPicker({
         </select>
       </label>
 
-      {previewImage ? (
-        <div className="model-preview">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            key={previewImage}
-            src={previewImage}
-            alt={selected?.name || series || "BMW"}
-            onLoad={() => setImgOk(true)}
-            onError={() => setImgOk(false)}
-          />
-          {!imgOk ? (
-            <p className="error">Could not load model photo.</p>
-          ) : null}
-          <div>
-            <strong>
-              {selected
-                ? `${selected.series} ${selected.name}`
-                : series || "BMW"}
-            </strong>
-            <span className="muted">
-              {selected
-                ? `${selected.fuel} · ${year} · ${selected.body}`
-                : [year, fuel].filter(Boolean).join(" · ") ||
-                  "Pick series, year, fuel, then model"}
-            </span>
+      <div className={`model-preview${previewImage ? "" : " empty"}`}>
+        {previewImage ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              key={previewImage}
+              src={previewImage}
+              alt={selected?.name || series || "BMW"}
+              onLoad={() => setImgOk(true)}
+              onError={() => setImgOk(false)}
+            />
+            {!imgOk ? (
+              <p className="error">Could not load model photo.</p>
+            ) : null}
+          </>
+        ) : (
+          <div className="model-preview-placeholder" aria-hidden>
+            BMW
           </div>
+        )}
+        <div>
+          <strong>
+            {selected
+              ? `${selected.series} ${selected.name}`
+              : series || "Your BMW"}
+          </strong>
+          <span className="muted">
+            {selected
+              ? `${selected.fuel} · ${year} · ${selected.body}`
+              : [year, fuel].filter(Boolean).join(" · ") ||
+                "Series → year → fuel → model"}
+          </span>
         </div>
-      ) : null}
+      </div>
     </div>
   );
 }

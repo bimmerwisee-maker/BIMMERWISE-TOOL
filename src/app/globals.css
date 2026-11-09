@@ -528,11 +528,64 @@ select {
   height: 56px;
   object-fit: contain;
   border-radius: 8px;
-  background: transparent;
+  background:
+    radial-gradient(ellipse at center, rgba(220, 230, 240, 0.18), transparent 70%),
+    #1a1d22;
 }
 
 .model-picker .model-preview {
   margin-top: 0.15rem;
+}
+
+.fuel-fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+
+.fuel-fieldset legend {
+  padding: 0;
+  margin-bottom: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.fuel-chips {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.fuel-chip {
+  appearance: none;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  min-height: 44px;
+  padding: 0.55rem 0.35rem;
+  background: rgba(10, 10, 11, 0.75);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.fuel-chip:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.fuel-chip.active {
+  border-color: rgba(0, 160, 227, 0.75);
+  background: rgba(0, 160, 227, 0.18);
+  color: #dff6ff;
+  box-shadow: inset 0 0 0 1px rgba(0, 160, 227, 0.35);
+}
+
+.fuel-hint {
+  margin: 0.45rem 0 0;
+  font-size: 0.78rem;
 }
 
 .model-preview {
@@ -541,19 +594,31 @@ select {
   padding: 0.85rem;
   border-radius: 14px;
   border: 1px solid var(--line);
-  background: rgba(10, 10, 11, 0.45);
+  background: rgba(16, 18, 22, 0.7);
 }
 
-.model-preview img {
+.model-preview img,
+.model-preview-placeholder {
   display: block;
   width: 100%;
   max-width: 100%;
-  height: 180px;
+  height: 190px;
   object-fit: contain;
+  object-position: center;
   background:
-    radial-gradient(ellipse at center, rgba(0, 160, 227, 0.12), transparent 65%),
-    rgba(8, 8, 10, 0.9);
+    radial-gradient(ellipse at 50% 70%, rgba(0, 160, 227, 0.2), transparent 60%),
+    linear-gradient(180deg, #2a3038 0%, #15181d 100%);
   border-radius: 10px;
+}
+
+.model-preview-placeholder {
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.28);
+  font-family: var(--font-display, inherit);
+  font-size: 1.4rem;
+  letter-spacing: 0.12em;
+  font-weight: 700;
 }
 
 .model-preview strong,
@@ -598,7 +663,10 @@ select {
   width: 100%;
   height: clamp(180px, 42vw, 260px);
   object-fit: contain;
-  background: transparent;
+  object-position: center;
+  background:
+    radial-gradient(ellipse at 50% 70%, rgba(0, 160, 227, 0.18), transparent 58%),
+    linear-gradient(180deg, #2a3038 0%, #12151a 100%);
 }
 
 .home-garage-meta {
