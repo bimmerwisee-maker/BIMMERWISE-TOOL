@@ -503,29 +503,29 @@ select {
 }
 
 .vehicle-thumb {
-  width: 88px;
-  height: 50px;
-  object-fit: cover;
+  width: 96px;
+  height: 56px;
+  object-fit: contain;
   border-radius: 8px;
-  border: 1px solid var(--line);
+  background: transparent;
 }
 
 .model-preview {
   display: grid;
-  grid-template-columns: 120px 1fr;
+  grid-template-columns: 140px 1fr;
   gap: 0.75rem;
   align-items: center;
   padding: 0.7rem;
   border-radius: 12px;
   border: 1px solid var(--line);
-  background: rgba(10, 10, 11, 0.45);
+  background: rgba(10, 10, 11, 0.35);
 }
 
 .model-preview img {
-  width: 120px;
-  height: 68px;
-  object-fit: cover;
-  border-radius: 8px;
+  width: 140px;
+  height: 78px;
+  object-fit: contain;
+  background: transparent;
 }
 
 .model-preview strong,
@@ -580,9 +580,9 @@ select {
 
 .home-garage-card img {
   width: 100%;
-  height: 92px;
-  object-fit: cover;
-  border-radius: 10px;
+  height: 100px;
+  object-fit: contain;
+  background: transparent;
 }
 
 .home-garage-card strong {
