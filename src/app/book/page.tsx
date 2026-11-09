@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppShell } from "../../components/AppShell";
 import { SERVICE_TYPES } from "../../lib/types";
@@ -19,12 +19,24 @@ type Me = {
   vehicles: Vehicle[];
 };
 
+function todayDateValue(): string {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 export default function BookPage() {
   const router = useRouter();
   const [me, setMe] = useState<Me | null>(null);
   const [mode, setMode] = useState<"guest" | "account">("guest");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [doneCode, setDoneCode] = useState("");
+  const [preferredDate, setPreferredDate] = useState("");
+  const [preferredTime, setPreferredTime] = useState("09:00");
+  const minDate = useMemo(() => todayDateValue(), []);
 
   useEffect(() => {
     void (async () => {
@@ -44,7 +56,18 @@ export default function BookPage() {
     const payload: Record<string, string> = Object.fromEntries(
       [...form.entries()].map(([k, v]) => [k, String(v)]),
     );
-    payload.as_guest = mode === "guest" ? "true" : "";
+
+    let scheduled_at = "";
+    if (preferredDate) {
+      const time = preferredTime || "09:00";
+      const local = new Date(`${preferredDate}T${time}:00`);
+      if (Number.isNaN(local.getTime())) {
+        setError("Choose a valid date and time.");
+        setBusy(false);
+        return;
+      }
+      scheduled_at = local.toISOString();
+    }
 
     try {
       const res = await fetch("/api/bookings", {
@@ -52,6 +75,7 @@ export default function BookPage() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           ...payload,
+          scheduled_at,
           as_guest: mode === "guest",
         }),
       });
@@ -59,19 +83,17 @@ export default function BookPage() {
       if (!res.ok) {
         if (data.error === "vin_too_short") {
           setError("VIN must include at least the last 7 characters.");
+        } else if (data.error === "invalid_schedule") {
+          setError("Choose a valid preferred date and time.");
         } else {
           setError("Could not create booking. Check the required fields.");
         }
         return;
       }
-      const email = encodeURIComponent(
-        mode === "account" && me?.customer
-          ? me.customer.email
-          : String(payload.customer_email ?? ""),
-      );
-      router.push(
-        `/track?code=${encodeURIComponent(data.booking.code)}&email=${email}`,
-      );
+      setDoneCode(data.booking.code);
+      if (mode === "account") {
+        router.push("/");
+      }
     } catch {
       setError("Network error. Try again.");
     } finally {
@@ -81,12 +103,35 @@ export default function BookPage() {
 
   const loggedIn = Boolean(me?.customer);
 
+  if (doneCode) {
+    return (
+      <AppShell active="book">
+        <section className="hero">
+          <p className="eyebrow">Booked</p>
+          <h1>Request sent</h1>
+          <p>We&apos;ll confirm your booking shortly. Your reference:</p>
+        </section>
+        <div className="panel">
+          <div className="code-chip">{doneCode}</div>
+          <div className="btn-row section-gap">
+            <a className="btn" href="/">
+              Back home
+            </a>
+            <a className="btn secondary" href="/book">
+              Book another
+            </a>
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell active="book">
       <section className="hero">
         <p className="eyebrow">Reserve a bay</p>
         <h1>Book service</h1>
-        <p>Book as a guest, or use your profile vehicle with VIN and registration saved.</p>
+        <p>Book as a guest, or with a vehicle saved on your profile.</p>
       </section>
 
       <div className="segmented section-gap">
@@ -132,7 +177,7 @@ export default function BookPage() {
             <div className="form-grid two">
               <label>
                 Year
-                <input name="vehicle_year" maxLength={8} placeholder="2019" />
+                <input name="vehicle_year" maxLength={8} placeholder="2019" inputMode="numeric" />
               </label>
               <label>
                 Make
@@ -183,22 +228,40 @@ export default function BookPage() {
           </>
         )}
 
-        <div className="form-grid two">
-          <label>
-            Service
-            <select name="service_type" required defaultValue="Diagnostic">
-              {SERVICE_TYPES.map((service) => (
-                <option key={service} value={service}>
-                  {service}
-                </option>
-              ))}
-            </select>
-          </label>
+        <label>
+          Service
+          <select name="service_type" required defaultValue="Diagnostic">
+            {SERVICE_TYPES.map((service) => (
+              <option key={service} value={service}>
+                {service}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div className="date-time-row">
           <label>
             Preferred date
-            <input name="scheduled_at" type="datetime-local" />
+            <input
+              type="date"
+              name="preferred_date"
+              min={minDate}
+              value={preferredDate}
+              onChange={(e) => setPreferredDate(e.target.value)}
+            />
+          </label>
+          <label>
+            Preferred time
+            <input
+              type="time"
+              name="preferred_time"
+              value={preferredTime}
+              onChange={(e) => setPreferredTime(e.target.value)}
+              disabled={!preferredDate}
+            />
           </label>
         </div>
+
         <label>
           What&apos;s going on?
           <textarea name="customer_notes" maxLength={1000} />

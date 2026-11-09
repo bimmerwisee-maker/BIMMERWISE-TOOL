@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { AppShell } from "../components/AppShell";
+import { BrandLogo } from "../components/BrandLogo";
 import { ProgressBar } from "../components/ProgressBar";
 
 type MePayload = {
@@ -30,13 +31,12 @@ export default function HomePage() {
 
   return (
     <AppShell active="home">
-      <section className="hero">
-        <p className="eyebrow">Service bay</p>
-        <h1>BimmerWise</h1>
+      <section className="hero center">
+        <BrandLogo size="hero" href={null} />
         <p>
           {me?.customer
-            ? `Welcome back, ${me.customer.name}. Track your bay progress or book the next visit.`
-            : "Book as a guest or register to save your vehicles and follow live job progress."}
+            ? `Welcome back, ${me.customer.name}.`
+            : "Independent BMW & MINI service booking."}
         </p>
       </section>
 
@@ -48,23 +48,31 @@ export default function HomePage() {
         />
       ) : null}
 
-      <div className="action-stack">
-        <a className="action-link" href="/book">
-          <strong>Book service</strong>
-          <span>Guest checkout or book with a saved vehicle.</span>
+      <div className="home-actions">
+        <a href="/book">
+          <span>
+            <strong>Book service</strong>
+            <span>Guest or saved vehicle</span>
+          </span>
+          <em>→</em>
         </a>
-        <a className="action-link" href="/register">
-          <strong>Register</strong>
-          <span>Create an account with email or Google, then add vehicles.</span>
-        </a>
-        <a className="action-link" href="/profile">
-          <strong>My profile</strong>
-          <span>Manage vehicles (VIN last 7) and upload a photo.</span>
-        </a>
-        <a className="action-link" href="/track">
-          <strong>Track with code</strong>
-          <span>Look up a booking with code + email.</span>
-        </a>
+        {me?.customer ? (
+          <a href="/profile">
+            <span>
+              <strong>My profile</strong>
+              <span>Vehicles and photo</span>
+            </span>
+            <em>→</em>
+          </a>
+        ) : (
+          <a href="/register">
+            <span>
+              <strong>Register</strong>
+              <span>Email or Google</span>
+            </span>
+            <em>→</em>
+          </a>
+        )}
       </div>
     </AppShell>
   );
