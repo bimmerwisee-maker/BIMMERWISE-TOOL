@@ -17,16 +17,21 @@ const body = Archivo({
 export const metadata: Metadata = {
   title: "BimmerWise Booking",
   description:
-    "Book service, track vehicle progress, and share shop photo updates with customers.",
+    "Book service, track bay progress, register vehicles, and get shop photo updates.",
+  manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     title: "BimmerWise",
     statusBarStyle: "black-translucent",
   },
+  icons: {
+    icon: "/icon-192.png",
+    apple: "/icon-192.png",
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0e1218",
+  themeColor: "#050607",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,

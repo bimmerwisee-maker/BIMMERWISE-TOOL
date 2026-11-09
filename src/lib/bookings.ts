@@ -14,32 +14,42 @@ export async function createBooking(input: {
   vehicle_make: string;
   vehicle_model: string;
   vehicle_plate: string;
+  vin_last7: string;
   service_type: string;
   customer_notes: string;
   scheduled_at: string | null;
+  customer_id?: string | null;
+  vehicle_id?: string | null;
+  is_guest?: boolean;
 }): Promise<Booking> {
   const id = randomUUID();
   const code = newBookingCode();
+  const vin = input.vin_last7.trim().toUpperCase().slice(-7);
   const rows = await sql<Booking>(
     `insert into bookings (
       id, code, customer_name, customer_phone, customer_email,
-      vehicle_year, vehicle_make, vehicle_model, vehicle_plate,
-      service_type, customer_notes, status, scheduled_at
-    ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'scheduled',$12)
+      vehicle_year, vehicle_make, vehicle_model, vehicle_plate, vin_last7,
+      service_type, customer_notes, status, scheduled_at,
+      customer_id, vehicle_id, is_guest
+    ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,'not_confirmed',$13,$14,$15,$16)
     returning *`,
     [
       id,
       code,
       input.customer_name,
       input.customer_phone,
-      input.customer_email,
+      input.customer_email.toLowerCase(),
       input.vehicle_year,
       input.vehicle_make,
       input.vehicle_model,
       input.vehicle_plate,
+      vin,
       input.service_type,
       input.customer_notes,
       input.scheduled_at,
+      input.customer_id ?? null,
+      input.vehicle_id ?? null,
+      input.is_guest ?? true,
     ],
   );
   const booking = rows[0];
@@ -49,8 +59,8 @@ export async function createBooking(input: {
     [
       randomUUID(),
       booking.id,
-      "Booking received. We'll confirm your appointment shortly.",
-      "scheduled",
+      "Booking received — waiting for shop confirmation.",
+      "not_confirmed",
       "system",
     ],
   );

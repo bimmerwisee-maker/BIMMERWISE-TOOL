@@ -1,9 +1,20 @@
 # BimmerWise Booking
 
-Mobile-first service booking app for the shop:
+Mobile-first service booking app (works on Android & iOS browsers; add to Home Screen for an app-like feel):
 
-- Customers book service and track live updates with a booking code plus email
-- Shop admins post status updates and upload vehicle inspection photos
+- Customers register (Google or email), save vehicles (VIN last 7, registration, year/model), or book as a guest
+- Home shows current booking progress (0→100%) only when a job is active
+- Shop admins post status updates and upload inspection photos
+
+## Progress steps
+
+| % | Status |
+|---|--------|
+| 0 | Booking not confirmed |
+| 25 | Booking confirmed |
+| 50 | Job started |
+| 75 | Ready for collection |
+| 100 | Car collected |
 
 ## Local development
 
@@ -11,14 +22,11 @@ Mobile-first service booking app for the shop:
 env -u DATABASE_URL npm run dev
 ```
 
-Open [http://127.0.0.1:3000](http://127.0.0.1:3000).
-
-Locally, the simulated Cursor team admin can open the shop console without a password.
-Password login only works when `BOOKING_ADMIN_PASSWORD` is set.
+- Sample Google sign-in is available locally when Google OAuth secrets are unset
+- Password admin login only works when `BOOKING_ADMIN_PASSWORD` is set
+- Simulated Cursor team admins can open the shop console
 
 ## Publish notes
 
-- Declare Postgres via `cursor-app.json` / `migrations/`
-- Set app secret `BOOKING_ADMIN_PASSWORD` for password-based shop login
-- Publish as **public** so customers can book and track without Cursor accounts
-- Cursor team admins are also admitted to the shop console when identity is present
+Set secrets: `BOOKING_ADMIN_PASSWORD`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`.
+Publish as **public** so customers can book without Cursor accounts.

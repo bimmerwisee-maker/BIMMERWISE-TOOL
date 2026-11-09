@@ -41,7 +41,7 @@ export default function AdminBookingPage() {
   const [detail, setDetail] = useState<Detail | null>(null);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-  const [status, setStatus] = useState<BookingStatus>("diagnosing");
+  const [status, setStatus] = useState<BookingStatus>("not_confirmed");
   const [caption, setCaption] = useState("");
   const [busy, setBusy] = useState(false);
 
